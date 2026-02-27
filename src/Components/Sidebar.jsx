@@ -83,57 +83,65 @@ const Sidebar = ({ isCollapsed, isMobile, setIsCollapsed }) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
 
   const handleLogout = async () => {
-    try {
-      await axios.post("https://credenhealth.onrender.com/api/staff/logout", {}, { withCredentials: true });
-      localStorage.removeItem("staffToken");
-      alert("Logout successful");
-      window.location.href = "/staff-login";
-    } catch (err) {
-      console.error(err);
-      alert("Logout failed. Please try again.");
-    }
+    window.location.href = "/";
   };
 
   const staffElements = [
-    { icon: "ri-dashboard-fill",            name: "Dashboard",   path: "/dashboard"  },
-    { icon: "ri-user-fill",                 name: "My Profile",  path: "/myprofile"  },
-    { icon: "ri-time-fill",                 name: "Attendance",  dropdown: [
-        { name: "Punch In/Out",       path: "/punch"      },
+    { icon: "ri-dashboard-fill", name: "Dashboard", path: "/dashboard" },
+    { icon: "ri-user-fill", name: "My Profile", path: "/myprofile" },
+    {
+      icon: "ri-time-fill", name: "Attendance", dropdown: [
+        { name: "Punch In/Out", path: "/punch" },
         { name: "Attendance History", path: "/attendance" },
-        { name: "Monthly Report",     path: "/report"     },
-    ]},
-    { icon: "ri-task-fill",                 name: "Tasks",       dropdown: [
-        { name: "My Tasks",    path: "/mytasks"     },
-        { name: "Task History",path: "/taskhistory" },
-        { name: "Performance", path: "/myperformance"},
-    ]},
-    { icon: "ri-calendar-event-fill",       name: "Leave",       dropdown: [
-        { name: "Apply Leave",   path: "/applyleave"   },
+        { name: "Monthly Report", path: "/report" },
+      ]
+    },
+    {
+      icon: "ri-task-fill", name: "Tasks", dropdown: [
+        { name: "My Tasks", path: "/mytasks" },
+        { name: "Task History", path: "/taskhistory" },
+        { name: "Performance", path: "/myperformance" },
+      ]
+    },
+    {
+      icon: "ri-calendar-event-fill", name: "Leave", dropdown: [
+        { name: "Apply Leave", path: "/applyleave" },
         { name: "Leave Balance", path: "/leavebalance" },
         { name: "Leave History", path: "/leavehistory" },
-    ]},
-    { icon: "ri-money-dollar-circle-fill",  name: "Salary",      dropdown: [
+      ]
+    },
+    {
+      icon: "ri-money-dollar-circle-fill", name: "Salary", dropdown: [
         { name: "Salary Slips", path: "/salaryslip" },
-    ]},
-    { icon: "ri-bar-chart-fill",            name: "Performance", dropdown: [
+      ]
+    },
+    {
+      icon: "ri-bar-chart-fill", name: "Performance", dropdown: [
         { name: "Performance Report", path: "/performancereport" },
-        { name: "KPI Metrics",        path: "/kpi"               },
-        { name: "Goals",              path: "/goals"             },
-    ]},
-    { icon: "ri-team-fill",                 name: "Team",        dropdown: [
-        { name: "Team Members",  path: "/teammembers"  },
+        { name: "KPI Metrics", path: "/kpi" },
+        { name: "Goals", path: "/goals" },
+      ]
+    },
+    {
+      icon: "ri-team-fill", name: "Team", dropdown: [
+        { name: "Team Members", path: "/teammembers" },
         { name: "Team Projects", path: "/teamprojects" },
-    ]},
-    { icon: "ri-file-text-fill",            name: "Documents",   dropdown: [
-        { name: "My Documents",      path: "/mydocuments"      },
-        { name: "Upload Documents",  path: "/upload-documents" },
-    ]},
-    { icon: "ri-settings-3-fill",           name: "Settings",    dropdown: [
-        { name: "Profile Settings", path: "/profile-settings"    },
-        { name: "Change Password",  path: "/change-password"     },
-        { name: "Notifications",    path: "/staff-notifications" },
-    ]},
-    { icon: "ri-logout-box-fill",           name: "Logout",      action: handleLogout },
+      ]
+    },
+    {
+      icon: "ri-file-text-fill", name: "Documents", dropdown: [
+        { name: "My Documents", path: "/mydocuments" },
+        { name: "Upload Documents", path: "/upload-documents" },
+      ]
+    },
+    {
+      icon: "ri-settings-3-fill", name: "Settings", dropdown: [
+        { name: "Profile Settings", path: "/profile-settings" },
+        { name: "Change Password", path: "/change-password" },
+        { name: "Notifications", path: "/staff-notifications" },
+      ]
+    },
+    { icon: "ri-logout-box-fill", name: "Logout", action: handleLogout },
   ];
 
   // ── Shared header + nav + footer markup ──

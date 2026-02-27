@@ -66,14 +66,14 @@ const Spinner = ({ dark = false }) => (
 
 /* ── Design tokens ───────────────────────────────────────── */
 const C = {
-  grad:     'linear-gradient(135deg,#06cabc,#04b0a3)',
-  glow:     '0 8px 24px rgba(6,202,188,0.42)',
-  glowLg:   '0 12px 36px rgba(6,202,188,0.52)',
-  card:     '0 24px 64px rgba(6,202,188,0.16),0 4px 20px rgba(0,0,0,0.07)',
-  border:   'rgba(6,202,188,0.22)',
-  soft:     'rgba(6,202,188,0.08)',
-  teal:     '#06cabc',
-  dark:     '#04a899',
+  grad: 'linear-gradient(135deg,#06cabc,#04b0a3)',
+  glow: '0 8px 24px rgba(6,202,188,0.42)',
+  glowLg: '0 12px 36px rgba(6,202,188,0.52)',
+  card: '0 24px 64px rgba(6,202,188,0.16),0 4px 20px rgba(0,0,0,0.07)',
+  border: 'rgba(6,202,188,0.22)',
+  soft: 'rgba(6,202,188,0.08)',
+  teal: '#06cabc',
+  dark: '#04a899',
 };
 
 const pageBg = {
@@ -93,7 +93,7 @@ const Corner = ({ pos }) => (
   <div className={`absolute w-5 h-5 ${pos}`} style={{ borderColor: '#06cabc' }} />
 );
 
-const StepDone  = ({ lbl }) => (
+const StepDone = ({ lbl }) => (
   <div className="flex items-center gap-1.5">
     <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
       style={{ background: 'rgba(6,202,188,0.15)', color: C.teal }}>✓</div>
@@ -107,7 +107,7 @@ const StepActive = ({ n, lbl }) => (
     <span className="text-xs font-semibold hidden sm:block" style={{ color: C.teal }}>{lbl}</span>
   </div>
 );
-const StepIdle  = ({ n, lbl }) => (
+const StepIdle = ({ n, lbl }) => (
   <div className="flex items-center gap-1.5">
     <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold bg-gray-100 text-gray-400">{n}</div>
     <span className="text-xs font-medium text-gray-400 hidden sm:block">{lbl}</span>
@@ -120,15 +120,15 @@ const StepIdle  = ({ n, lbl }) => (
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const [screen,      setScreen]      = useState('login'); // login | face | done
-  const [employeeId,  setEmployeeId]  = useState('');
-  const [error,       setError]       = useState('');
-  const [loading,     setLoading]     = useState(false);
-  const [camState,    setCamState]    = useState('idle'); // idle | requesting | active | error
-  const [captured,    setCaptured]    = useState(null);
-  const [verified,    setVerified]    = useState(false);
+  const [screen, setScreen] = useState('login'); // login | face | done
+  const [employeeId, setEmployeeId] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [camState, setCamState] = useState('idle'); // idle | requesting | active | error
+  const [captured, setCaptured] = useState(null);
+  const [verified, setVerified] = useState(false);
 
-  const videoRef  = useRef(null);
+  const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -148,18 +148,18 @@ const LoginPage = () => {
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width:      { ideal: 1280 },
-          height:     { ideal: 720  },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           facingMode: 'user',
         },
         audio: false,
       });
     } catch (err) {
       const msg =
-        err.name === 'NotAllowedError'  ? 'Camera permission denied. Please click Allow in your browser prompt.' :
-        err.name === 'NotFoundError'    ? 'No camera found on this device.' :
-        err.name === 'NotReadableError' ? 'Camera is in use by another app.' :
-                                          `Camera error: ${err.message}`;
+        err.name === 'NotAllowedError' ? 'Camera permission denied. Please click Allow in your browser prompt.' :
+          err.name === 'NotFoundError' ? 'No camera found on this device.' :
+            err.name === 'NotReadableError' ? 'Camera is in use by another app.' :
+              `Camera error: ${err.message}`;
       setError(msg);
       setCamState('error');
       return;
@@ -209,13 +209,13 @@ const LoginPage = () => {
 
   /* ── Capture ───────────────────────────────────────────── */
   const doCapture = () => {
-    const video  = videoRef.current;
+    const video = videoRef.current;
     const canvas = canvasRef.current;
     if (!video || !canvas) return null;
 
-    const w = video.videoWidth  || 640;
+    const w = video.videoWidth || 640;
     const h = video.videoHeight || 480;
-    canvas.width  = w;
+    canvas.width = w;
     canvas.height = h;
 
     const ctx = canvas.getContext('2d');
@@ -273,13 +273,13 @@ const LoginPage = () => {
   /* ── Input focus styles ────────────────────────────────── */
   const onFocus = e => {
     e.target.style.borderColor = '#06cabc';
-    e.target.style.background  = '#fff';
-    e.target.style.boxShadow   = '0 0 0 4px rgba(6,202,188,0.12)';
+    e.target.style.background = '#fff';
+    e.target.style.boxShadow = '0 0 0 4px rgba(6,202,188,0.12)';
   };
   const onBlur = e => {
     e.target.style.borderColor = 'transparent';
-    e.target.style.background  = 'rgba(6,202,188,0.07)';
-    e.target.style.boxShadow   = 'none';
+    e.target.style.background = 'rgba(6,202,188,0.07)';
+    e.target.style.boxShadow = 'none';
   };
 
   /* ════════════════════ DONE SCREEN ════════════════════════ */
@@ -321,11 +321,11 @@ const LoginPage = () => {
           <div className="p-7">
             {/* Steps */}
             <div className="flex items-center gap-1.5 mb-6">
-              <StepDone   lbl="ID Verified" />
+              <StepDone lbl="ID Verified" />
               <div className="flex-1 h-px" style={{ background: C.border }} />
               <StepActive n="2" lbl="Face Scan" />
               <div className="flex-1 h-px bg-gray-200" />
-              <StepIdle   n="3" lbl="Access" />
+              <StepIdle n="3" lbl="Access" />
             </div>
 
             {/* Header */}
@@ -347,12 +347,12 @@ const LoginPage = () => {
                 {verified
                   ? 'Access granted — redirecting…'
                   : captured
-                  ? 'Photo ready. Confirm or retake.'
-                  : camState === 'requesting'
-                  ? 'Requesting camera permission…'
-                  : camState === 'error'
-                  ? 'Could not access camera.'
-                  : 'Centre your face in the oval and hold still.'}
+                    ? 'Photo ready. Confirm or retake.'
+                    : camState === 'requesting'
+                      ? 'Requesting camera permission…'
+                      : camState === 'error'
+                        ? 'Could not access camera.'
+                        : 'Centre your face in the oval and hold still.'}
               </p>
             </div>
 
@@ -438,8 +438,8 @@ const LoginPage = () => {
                   {loading
                     ? <><Spinner />{captured ? 'Verifying…' : 'Capturing…'}</>
                     : captured
-                    ? '✓ Confirm & Verify'
-                    : '📸 Capture Photo'}
+                      ? '✓ Confirm & Verify'
+                      : '📸 Capture Photo'}
                 </button>
               </div>
             )}
@@ -487,14 +487,25 @@ const LoginPage = () => {
         <div className="p-8 pb-6">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-8">
-            <div className="relative w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden"
-              style={{ background: C.grad, boxShadow: C.glow }}>
-              <div className="absolute inset-0"
-                style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.22),transparent 55%)' }} />
-              <ShieldIcon />
+            <div
+              className="relative w-12 h-12 rounded-2xl flex-shrink-0 flex items-center justify-center overflow-hidden"
+              style={{ background: C.grad, boxShadow: C.glow }}
+            >
+              {/* glass shine */}
+              <div
+                className="absolute inset-0"
+                style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.22),transparent 55%)" }}
+              />
+
+              {/* LOGO */}
+              <img
+                src="/logo.png"   // put your logo in public folder
+                alt="logo"
+                className="relative z-10 w-7 h-7 object-contain"
+              />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-800 leading-none tracking-tight">SecureAccess</h1>
+              <h1 className="text-lg font-bold text-gray-800 leading-none tracking-tight">Pixelmindsolutions </h1>
               <p className="text-xs font-semibold uppercase tracking-widest mt-1" style={{ color: C.teal }}>Staff Portal</p>
             </div>
           </div>
