@@ -88,7 +88,7 @@ const Sidebar = ({ isCollapsed, isMobile, setIsCollapsed }) => {
 
   const staffElements = [
     { icon: "ri-dashboard-fill", name: "Dashboard", path: "/dashboard" },
-    { icon: "ri-user-fill", name: "My Profile", path: "/myprofile" },
+    
     {
       icon: "ri-time-fill", name: "Attendance", dropdown: [
         { name: "Punch In/Out", path: "/punch" },
@@ -134,6 +134,7 @@ const Sidebar = ({ isCollapsed, isMobile, setIsCollapsed }) => {
         { name: "Upload Documents", path: "/upload-documents" },
       ]
     },
+    { icon: "ri-user-fill", name: "My Profile", path: "/myprofile" },
     {
       icon: "ri-settings-3-fill", name: "Settings", dropdown: [
         { name: "Profile Settings", path: "/profile-settings" },
