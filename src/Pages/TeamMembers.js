@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import {
   FiUsers,
   FiSearch,
-  FiFilter,
   FiMail,
-  FiPhone,
   FiMapPin,
-  FiCalendar,
-  FiAward,
   FiStar,
   FiMoreVertical,
   FiUserPlus,
