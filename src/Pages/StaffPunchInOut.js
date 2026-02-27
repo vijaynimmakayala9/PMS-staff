@@ -6,273 +6,174 @@ import {
   FiUser,
   FiCheckCircle,
   FiAlertCircle,
-  FiRefreshCw,
   FiDownload,
   FiBarChart2,
   FiCoffee,
   FiSun,
-  FiMoon
+  FiZap,
 } from 'react-icons/fi';
 
 const StaffPunchInOut = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [punchStatus, setPunchStatus] = useState('out');
+  const [currentTime, setCurrentTime]   = useState(new Date());
+  const [punchStatus, setPunchStatus]   = useState('out');
   const [todayRecords, setTodayRecords] = useState([]);
-  const [location, setLocation] = useState('Office');
-  const [isLoading, setIsLoading] = useState(false);
+  const [location, setLocation]         = useState('Office');
+  const [isLoading, setIsLoading]       = useState(false);
   const [showIdlePopup, setShowIdlePopup] = useState(false);
-  const [idleTime, setIdleTime] = useState(0);
-  const [workStats, setWorkStats] = useState({
-    totalHours: 0,
-    effectiveHours: 0,
-    idleTime: 0,
-    breakTime: 0,
-    teaBreakCount: 0,
-    lunchBreakCount: 0
+  const [idleTime, setIdleTime]         = useState(0);
+  const [workStats, setWorkStats]       = useState({
+    totalHours: 0, effectiveHours: 0,
+    idleTime: 0, teaBreakCount: 0, lunchBreakCount: 0,
   });
 
-  const idleTimerRef = useRef(null);
-  const activityTimerRef = useRef(null);
-  const punchInTimeRef = useRef(null);
-  const effectiveTimeRef = useRef(0);
-  const idleTimeRef = useRef(0);
+  const idleTimerRef        = useRef(null);
+  const activityTimerRef    = useRef(null);
+  const punchInTimeRef      = useRef(null);
+  const idleTimeRef         = useRef(0);
   const lastActivityTimeRef = useRef(Date.now());
 
-  // Update current time every second
+  /* ── Clock + work-time tick ── */
   useEffect(() => {
     const timer = setInterval(() => {
-      const now = new Date();
-      setCurrentTime(now);
-
-      // Calculate work time if punched in
+      setCurrentTime(new Date());
       if (punchStatus === 'in' && punchInTimeRef.current) {
-        const totalMs = Date.now() - punchInTimeRef.current;
+        const totalMs     = Date.now() - punchInTimeRef.current;
         const effectiveMs = totalMs - idleTimeRef.current;
-        
-        setWorkStats(prev => ({
-          ...prev,
-          totalHours: (totalMs / (1000 * 60 * 60)).toFixed(2),
-          effectiveHours: (effectiveMs / (1000 * 60 * 60)).toFixed(2),
-          idleTime: (idleTimeRef.current / (1000 * 60)).toFixed(0)
+        setWorkStats(p => ({
+          ...p,
+          totalHours:     (totalMs     / 3_600_000).toFixed(2),
+          effectiveHours: (effectiveMs / 3_600_000).toFixed(2),
+          idleTime:       (idleTimeRef.current / 60_000).toFixed(0),
         }));
       }
     }, 1000);
-
     return () => clearInterval(timer);
   }, [punchStatus]);
 
-  // Activity tracking for idle detection
+  /* ── Idle detection ── */
   useEffect(() => {
     const handleActivity = () => {
       lastActivityTimeRef.current = Date.now();
       setShowIdlePopup(false);
       setIdleTime(0);
-      
-      if (idleTimerRef.current) {
-        clearTimeout(idleTimerRef.current);
-      }
-      
-      // Set new idle check timer (1 minute)
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       idleTimerRef.current = setTimeout(() => {
         setShowIdlePopup(true);
         startIdleTimer();
-      }, 60000); // 1 minute
+      }, 60_000);
     };
-
-    // Add event listeners
-    window.addEventListener('mousemove', handleActivity);
-    window.addEventListener('keypress', handleActivity);
-    window.addEventListener('click', handleActivity);
-    window.addEventListener('scroll', handleActivity);
-
-    // Initial activity
+    ['mousemove','keypress','click','scroll'].forEach(e => window.addEventListener(e, handleActivity));
     handleActivity();
-
     return () => {
-      window.removeEventListener('mousemove', handleActivity);
-      window.removeEventListener('keypress', handleActivity);
-      window.removeEventListener('click', handleActivity);
-      window.removeEventListener('scroll', handleActivity);
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      ['mousemove','keypress','click','scroll'].forEach(e => window.removeEventListener(e, handleActivity));
+      if (idleTimerRef.current)     clearTimeout(idleTimerRef.current);
       if (activityTimerRef.current) clearInterval(activityTimerRef.current);
     };
   }, []);
 
   const startIdleTimer = () => {
     if (activityTimerRef.current) clearInterval(activityTimerRef.current);
-    
     activityTimerRef.current = setInterval(() => {
-      const idleSeconds = Math.floor((Date.now() - lastActivityTimeRef.current) / 1000) - 60;
-      if (idleSeconds > 0) {
-        setIdleTime(idleSeconds);
-        idleTimeRef.current += 1000; // Add 1 second to idle time
-      }
+      const s = Math.floor((Date.now() - lastActivityTimeRef.current) / 1000) - 60;
+      if (s > 0) { setIdleTime(s); idleTimeRef.current += 1000; }
     }, 1000);
   };
 
-  // Mock today's records
+  /* ── Mock records ── */
   useEffect(() => {
-    const mockRecords = [
-      { id: 1, type: 'in', time: '09:00 AM', location: 'Office', status: 'completed' },
-      { id: 2, type: 'tea_break', time: '11:00 AM', location: 'Pantry', status: 'completed', duration: '15 mins' },
+    setTodayRecords([
+      { id: 1, type: 'in',          time: '09:00 AM', location: 'Office',    status: 'completed' },
+      { id: 2, type: 'tea_break',   time: '11:00 AM', location: 'Pantry',    status: 'completed', duration: '15 mins' },
       { id: 3, type: 'lunch_break', time: '01:00 PM', location: 'Cafeteria', status: 'completed', duration: '45 mins' },
-      { id: 4, type: 'tea_break', time: '04:00 PM', location: 'Pantry', status: 'completed', duration: '10 mins' },
-    ];
-    setTodayRecords(mockRecords);
+      { id: 4, type: 'tea_break',   time: '04:00 PM', location: 'Pantry',    status: 'completed', duration: '10 mins' },
+    ]);
   }, []);
 
-  const handlePunchIn = async () => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      const now = new Date();
-      const newRecord = {
-        id: todayRecords.length + 1,
-        type: 'in',
-        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        location: location,
-        status: 'completed',
-        timestamp: now.getTime()
-      };
-      
-      setTodayRecords(prev => [newRecord, ...prev]);
-      setPunchStatus('in');
-      punchInTimeRef.current = now.getTime();
-      effectiveTimeRef.current = 0;
-      idleTimeRef.current = 0;
-      
-      setIsLoading(false);
-    }, 1000);
-  };
+  /* ── Actions ── */
+  const withLoading = (fn) => { setIsLoading(true); setTimeout(() => { fn(); setIsLoading(false); }, 900); };
 
-  const handlePunchOut = async () => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      const now = new Date();
-      const newRecord = {
-        id: todayRecords.length + 1,
-        type: 'out',
-        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        location: location,
-        status: 'completed',
-        timestamp: now.getTime()
-      };
-      
-      // Calculate final work session
-      if (punchInTimeRef.current) {
-        const totalMs = now.getTime() - punchInTimeRef.current;
-        const effectiveMs = totalMs - idleTimeRef.current;
-        
-        setWorkStats(prev => ({
-          ...prev,
-          totalHours: (totalMs / (1000 * 60 * 60)).toFixed(2),
-          effectiveHours: (effectiveMs / (1000 * 60 * 60)).toFixed(2),
-          idleTime: (idleTimeRef.current / (1000 * 60)).toFixed(0)
-        }));
-      }
-      
-      setTodayRecords(prev => [newRecord, ...prev]);
-      setPunchStatus('out');
-      punchInTimeRef.current = null;
-      
-      setIsLoading(false);
-    }, 1000);
-  };
+  const handlePunchIn = () => withLoading(() => {
+    const now = new Date();
+    setTodayRecords(p => [{ id: p.length+1, type:'in', time: fmtTime(now), location, status:'completed' }, ...p]);
+    setPunchStatus('in');
+    punchInTimeRef.current = now.getTime();
+    idleTimeRef.current    = 0;
+  });
 
-  const handleBreak = (breakType) => {
-    setIsLoading(true);
-    
-    setTimeout(() => {
-      const now = new Date();
-      const breakRecord = {
-        id: todayRecords.length + 1,
-        type: breakType,
-        time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        location: location,
-        status: 'completed',
-        timestamp: now.getTime()
-      };
-      
-      setTodayRecords(prev => [breakRecord, ...prev]);
-      
-      // Update break counts
-      if (breakType === 'tea_break') {
-        setWorkStats(prev => ({ ...prev, teaBreakCount: prev.teaBreakCount + 1 }));
-      } else if (breakType === 'lunch_break') {
-        setWorkStats(prev => ({ ...prev, lunchBreakCount: prev.lunchBreakCount + 1 }));
-      }
-      
-      setIsLoading(false);
-    }, 1000);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'in': return 'bg-green-100 text-green-800 border-green-200';
-      case 'out': return 'bg-red-100 text-red-800 border-red-200';
-      case 'break': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  const handlePunchOut = () => withLoading(() => {
+    const now = new Date();
+    if (punchInTimeRef.current) {
+      const totalMs = now.getTime() - punchInTimeRef.current;
+      setWorkStats(p => ({
+        ...p,
+        totalHours:     (totalMs / 3_600_000).toFixed(2),
+        effectiveHours: ((totalMs - idleTimeRef.current) / 3_600_000).toFixed(2),
+        idleTime:       (idleTimeRef.current / 60_000).toFixed(0),
+      }));
     }
-  };
+    setTodayRecords(p => [{ id: p.length+1, type:'out', time: fmtTime(now), location, status:'completed' }, ...p]);
+    setPunchStatus('out');
+    punchInTimeRef.current = null;
+  });
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'in': return 'Working';
-      case 'out': return 'Not Working';
-      case 'break': return 'On Break';
-      default: return 'Unknown';
-    }
-  };
+  const handleBreak = (breakType) => withLoading(() => {
+    const now = new Date();
+    setTodayRecords(p => [{ id: p.length+1, type: breakType, time: fmtTime(now), location, status:'completed' }, ...p]);
+    setWorkStats(p => ({
+      ...p,
+      teaBreakCount:   breakType === 'tea_break'   ? p.teaBreakCount   + 1 : p.teaBreakCount,
+      lunchBreakCount: breakType === 'lunch_break' ? p.lunchBreakCount + 1 : p.lunchBreakCount,
+    }));
+  });
 
-  const getRecordIcon = (type) => {
-    switch (type) {
-      case 'in': return <FiCheckCircle className="text-green-500 text-lg" />;
-      case 'out': return <FiCheckCircle className="text-red-500 text-lg" />;
-      case 'tea_break': return <FiCoffee className="text-yellow-500 text-lg" />;
-      case 'lunch_break': return <FiSun className="text-orange-500 text-lg" />;
-      default: return <FiClock className="text-gray-500 text-lg" />;
-    }
-  };
+  const fmtTime = (d) => d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  const fmtSecs = (s) => { const m = Math.floor(s/60); return `${m}m ${s%60}s`; };
 
-  const getRecordText = (type) => {
-    switch (type) {
-      case 'in': return 'Punched In - Work Started';
-      case 'out': return 'Punched Out - Work Ended';
-      case 'tea_break': return 'Tea Break';
-      case 'lunch_break': return 'Lunch Break';
-      default: return 'Unknown';
-    }
-  };
+  /* ── Record helpers ── */
+  const recordIcon = (type) => ({
+    in:           <FiCheckCircle className="text-teal-500 text-lg flex-shrink-0" />,
+    out:          <FiCheckCircle className="text-rose-400  text-lg flex-shrink-0" />,
+    tea_break:    <FiCoffee      className="text-amber-400 text-lg flex-shrink-0" />,
+    lunch_break:  <FiSun        className="text-orange-400 text-lg flex-shrink-0" />,
+  }[type] || <FiClock className="text-teal-300 text-lg flex-shrink-0" />);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}m ${secs}s`;
-  };
+  const recordLabel = (type) => ({
+    in:           'Punched In — Work Started',
+    out:          'Punched Out — Work Ended',
+    tea_break:    'Tea Break',
+    lunch_break:  'Lunch Break',
+  }[type] || 'Unknown');
+
+  const efficiency = workStats.totalHours > 0
+    ? Math.round((workStats.effectiveHours / workStats.totalHours) * 100) : 0;
+
+  /* ── Stat tiles ── */
+  const statTiles = [
+    { icon: <FiClock className="text-teal-500 text-xl" />,   label:'Total Hours',     val: `${workStats.totalHours}h`,     bg:'bg-teal-50  border-teal-100'  },
+    { icon: <FiUser  className="text-emerald-500 text-xl" />, label:'Effective Hours',  val: `${workStats.effectiveHours}h`, bg:'bg-emerald-50 border-emerald-100' },
+    { icon: <FiAlertCircle className="text-rose-400 text-xl" />, label:'Idle Time',    val: `${workStats.idleTime}m`,       bg:'bg-rose-50  border-rose-100'  },
+    { icon: <FiCoffee className="text-amber-400 text-xl" />,  label:'Tea Breaks',      val: workStats.teaBreakCount,        bg:'bg-amber-50 border-amber-100' },
+    { icon: <FiSun    className="text-orange-400 text-xl" />, label:'Lunch Breaks',    val: workStats.lunchBreakCount,      bg:'bg-orange-50 border-orange-100'},
+    { icon: <FiZap    className="text-teal-500 text-xl" />,   label:'Efficiency',      val: `${efficiency}%`,               bg:'bg-teal-50  border-teal-100'  },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
-      {/* Idle Popup */}
+    <div className="min-h-screen bg-teal-50/40 p-3 sm:p-5 lg:p-6">
+
+      {/* ── Idle Popup ──────────────────────────────────────────────────────── */}
       {showIdlePopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center animate-bounce">
-            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FiAlertCircle className="text-yellow-600 text-3xl" />
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-teal-100 rounded-2xl shadow-xl p-6 sm:p-8 max-w-sm w-full text-center">
+            <div className="w-16 h-16 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FiAlertCircle className="text-amber-400 text-3xl" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">Hey there! 👋</h3>
-            <p className="text-gray-600 mb-2">You seem to be away from your desk</p>
-            <p className="text-gray-500 text-sm mb-4">Idle for: {formatTime(idleTime)}</p>
-            <p className="text-lg font-semibold text-blue-600 mb-4">
-              Time to get back to work! Your productivity matters! 🚀
-            </p>
+            <h3 className="text-lg font-bold text-teal-800 mb-1">Hey there! 👋</h3>
+            <p className="text-teal-500 text-sm mb-1">You seem to be away from your desk</p>
+            <p className="text-teal-400 text-xs mb-3">Idle for: {fmtSecs(idleTime)}</p>
+            <p className="text-sm font-semibold text-teal-600 mb-5">Time to get back to work! 🚀</p>
             <button
-              onClick={() => {
-                setShowIdlePopup(false);
-                setIdleTime(0);
-                lastActivityTimeRef.current = Date.now();
-              }}
-              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              onClick={() => { setShowIdlePopup(false); setIdleTime(0); lastActivityTimeRef.current = Date.now(); }}
+              className="w-full bg-teal-400 hover:bg-teal-500 text-white font-bold py-2.5 rounded-xl text-sm transition-all"
             >
               I'm Back! Let's Work 💪
             </button>
@@ -281,42 +182,49 @@ const StaffPunchInOut = () => {
       )}
 
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Smart Attendance System</h1>
-          <p className="text-gray-600 mt-2">Track your work hours with intelligent idle detection</p>
+
+        {/* ── Page Header ─────────────────────────────────────────────────────── */}
+        <div className="mb-5 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold text-teal-800">Smart Attendance System</h1>
+          <p className="text-teal-400 text-sm mt-0.5">Track your work hours with intelligent idle detection</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column - Punch Controls */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+          {/* ══ LEFT COLUMN ══════════════════════════════════════════════════════ */}
+          <div className="space-y-5">
+
             {/* Current Status Card */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Current Status</h2>
-                <div className={`px-4 py-2 rounded-full border-2 font-semibold ${getStatusColor(punchStatus)}`}>
-                  {getStatusText(punchStatus)}
-                </div>
+            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-sm font-bold text-teal-800">Current Status</h2>
+                <span className={`px-3 py-1 rounded-full border text-xs font-bold ${
+                  punchStatus === 'in'
+                    ? 'bg-teal-50 text-teal-600 border-teal-200'
+                    : 'bg-rose-50 text-rose-500 border-rose-200'
+                }`}>
+                  {punchStatus === 'in' ? '● Working' : '○ Not Working'}
+                </span>
               </div>
 
-              {/* Current Time */}
-              <div className="text-center mb-6">
-                <div className="text-5xl font-bold text-gray-800 mb-2">
-                  {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              {/* Clock */}
+              <div className="text-center mb-5">
+                <div className="text-4xl sm:text-5xl font-bold text-teal-800 tabular-nums leading-none mb-1.5">
+                  {currentTime.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}
                 </div>
-                <div className="text-lg text-gray-600">
-                  {currentTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </div>
+                <p className="text-teal-400 text-sm">
+                  {currentTime.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
+                </p>
               </div>
 
-              {/* Location */}
-              <div className="flex items-center justify-center space-x-2 mb-6 p-4 bg-gray-50 rounded-xl">
-                <FiMapPin className="text-blue-500 text-xl" />
-                <span className="text-gray-700 font-medium">Location: </span>
-                <select 
+              {/* Location selector */}
+              <div className="flex items-center gap-2 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5 mb-5">
+                <FiMapPin className="text-teal-400 flex-shrink-0" />
+                <span className="text-teal-500 text-sm font-medium">Location:</span>
+                <select
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="border-none bg-transparent font-semibold text-blue-600 focus:outline-none"
+                  className="flex-1 bg-transparent text-teal-700 font-semibold text-sm focus:outline-none cursor-pointer"
                 >
                   <option value="Office">Office</option>
                   <option value="Work From Home">Work From Home</option>
@@ -324,203 +232,156 @@ const StaffPunchInOut = () => {
                 </select>
               </div>
 
-              {/* Punch Buttons */}
-              <div className="space-y-4">
-                {punchStatus === 'out' ? (
+              {/* Punch buttons */}
+              {punchStatus === 'out' ? (
+                <button
+                  onClick={handlePunchIn}
+                  disabled={isLoading}
+                  className="w-full bg-teal-400 hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 shadow-sm"
+                >
+                  {isLoading
+                    ? <div className="w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                    : <FiClock className="text-base" />}
+                  <span>START WORKING 🚀</span>
+                </button>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={handlePunchIn}
+                    onClick={() => handleBreak('tea_break')}
                     disabled={isLoading}
-                    className="w-full bg-green-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-3"
+                    className="bg-amber-50 border border-amber-200 hover:bg-amber-100 disabled:opacity-50 text-amber-600 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
                   >
-                    {isLoading ? (
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                    ) : (
-                      <FiClock className="text-xl" />
-                    )}
-                    <span>START WORKING 🚀</span>
+                    {isLoading ? <div className="w-4 h-4 rounded-full border-2 border-amber-300 border-t-amber-500 animate-spin" /> : <FiCoffee />}
+                    <span>Tea Break</span>
                   </button>
-                ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={() => handleBreak('tea_break')}
-                      disabled={isLoading}
-                      className="bg-yellow-500 text-white py-4 rounded-xl font-bold hover:bg-yellow-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                    >
-                      {isLoading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      ) : (
-                        <FiCoffee className="text-lg" />
-                      )}
-                      <span>Tea Break</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => handleBreak('lunch_break')}
-                      disabled={isLoading}
-                      className="bg-orange-500 text-white py-4 rounded-xl font-bold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                    >
-                      {isLoading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      ) : (
-                        <FiSun className="text-lg" />
-                      )}
-                      <span>Lunch Break</span>
-                    </button>
-                    
-                    <button
-                      onClick={handlePunchOut}
-                      disabled={isLoading}
-                      className="col-span-2 bg-red-600 text-white py-4 rounded-xl font-bold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                    >
-                      {isLoading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      ) : (
-                        <FiCheckCircle className="text-lg" />
-                      )}
-                      <span>END WORK DAY</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+
+                  <button
+                    onClick={() => handleBreak('lunch_break')}
+                    disabled={isLoading}
+                    className="bg-orange-50 border border-orange-200 hover:bg-orange-100 disabled:opacity-50 text-orange-500 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? <div className="w-4 h-4 rounded-full border-2 border-orange-300 border-t-orange-500 animate-spin" /> : <FiSun />}
+                    <span>Lunch Break</span>
+                  </button>
+
+                  <button
+                    onClick={handlePunchOut}
+                    disabled={isLoading}
+                    className="col-span-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 disabled:opacity-50 text-rose-500 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? <div className="w-4 h-4 rounded-full border-2 border-rose-300 border-t-rose-500 animate-spin" /> : <FiCheckCircle />}
+                    <span>END WORK DAY</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Work Analytics */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                <FiBarChart2 className="text-purple-600 mr-3" />
+            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
+              <h3 className="text-sm font-bold text-teal-800 flex items-center gap-2 mb-5">
+                <span className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-500">
+                  <FiBarChart2 className="text-sm" />
+                </span>
                 Work Analytics
               </h3>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-blue-50 rounded-xl">
-                  <FiClock className="text-blue-600 text-2xl mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Total Hours</p>
-                  <p className="font-bold text-gray-800 text-lg">{workStats.totalHours}h</p>
-                </div>
-                <div className="text-center p-4 bg-green-50 rounded-xl">
-                  <FiUser className="text-green-600 text-2xl mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Effective Hours</p>
-                  <p className="font-bold text-gray-800 text-lg">{workStats.effectiveHours}h</p>
-                </div>
-                <div className="text-center p-4 bg-red-50 rounded-xl">
-                  <FiAlertCircle className="text-red-600 text-2xl mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Idle Time</p>
-                  <p className="font-bold text-gray-800 text-lg">{workStats.idleTime}m</p>
-                </div>
-                <div className="text-center p-4 bg-yellow-50 rounded-xl">
-                  <FiCoffee className="text-yellow-600 text-2xl mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Tea Breaks</p>
-                  <p className="font-bold text-gray-800 text-lg">{workStats.teaBreakCount}</p>
-                </div>
-                <div className="text-center p-4 bg-orange-50 rounded-xl">
-                  <FiSun className="text-orange-600 text-2xl mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Lunch Breaks</p>
-                  <p className="font-bold text-gray-800 text-lg">{workStats.lunchBreakCount}</p>
-                </div>
-                <div className="text-center p-4 bg-purple-50 rounded-xl">
-                  <FiCalendar className="text-purple-600 text-2xl mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Efficiency</p>
-                  <p className="font-bold text-gray-800 text-lg">
-                    {workStats.totalHours > 0 ? 
-                      Math.round((workStats.effectiveHours / workStats.totalHours) * 100) : 0}%
-                  </p>
-                </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {statTiles.map((t, i) => (
+                  <div key={i} className={`flex flex-col items-center text-center p-3 border rounded-xl ${t.bg}`}>
+                    {t.icon}
+                    <p className="text-[10px] text-teal-400 font-medium mt-1.5">{t.label}</p>
+                    <p className="font-bold text-teal-800 text-base leading-tight">{t.val}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Right Column - Records */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Today's Complete Timeline */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center">
-                  <FiCalendar className="text-blue-600 mr-3" />
-                  Today's Complete Timeline
+          {/* ══ RIGHT COLUMN ═════════════════════════════════════════════════════ */}
+          <div className="space-y-5">
+
+            {/* Timeline */}
+            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-sm font-bold text-teal-800 flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-500">
+                    <FiCalendar className="text-sm" />
+                  </span>
+                  Today's Timeline
                 </h3>
-                <button className="p-2 text-gray-500 hover:text-blue-600 transition-colors">
-                  <FiDownload className="text-lg" />
+                <button className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-400 hover:bg-teal-100 hover:text-teal-600 transition-all">
+                  <FiDownload className="text-sm" />
                 </button>
               </div>
 
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {todayRecords.length > 0 ? (
-                  todayRecords.map((record) => (
-                    <div key={record.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      {getRecordIcon(record.type)}
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-800">{getRecordText(record.type)}</p>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
-                          <span>🕒 {record.time}</span>
-                          <span>📍 {record.location}</span>
-                          {record.duration && <span>⏱️ {record.duration}</span>}
-                        </div>
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {todayRecords.length > 0 ? todayRecords.map((rec) => (
+                  <div
+                    key={rec.id}
+                    className="flex items-start gap-3 p-3 bg-teal-50/60 border border-teal-100 rounded-xl hover:bg-teal-50 transition-all"
+                  >
+                    {recordIcon(rec.type)}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-teal-800 truncate">{recordLabel(rec.type)}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-0.5 text-[11px] text-teal-400">
+                        <span>🕒 {rec.time}</span>
+                        <span>📍 {rec.location}</span>
+                        {rec.duration && <span>⏱ {rec.duration}</span>}
                       </div>
-                      <div className={`w-3 h-3 rounded-full ${
-                        record.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
-                      }`}></div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <FiClock className="text-4xl mx-auto mb-3 text-gray-300" />
-                    <p>No activity recorded today</p>
-                    <p className="text-sm">Start working to see your timeline</p>
+                    <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                      rec.status === 'completed' ? 'bg-teal-400' : 'bg-amber-400'
+                    }`} />
+                  </div>
+                )) : (
+                  <div className="text-center py-10">
+                    <FiClock className="text-4xl text-teal-200 mx-auto mb-3" />
+                    <p className="text-sm text-teal-400 font-medium">No activity recorded today</p>
+                    <p className="text-xs text-teal-300 mt-1">Start working to see your timeline</p>
                   </div>
                 )}
               </div>
 
               {/* Daily Summary */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="font-semibold text-gray-800 mb-3">Daily Summary</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Work Started:</span>
-                    <span className="font-medium">
-                      {todayRecords.find(r => r.type === 'in')?.time || '--:--'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Total Breaks:</span>
-                    <span className="font-medium">{workStats.teaBreakCount + workStats.lunchBreakCount}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Productivity:</span>
-                    <span className="font-medium text-green-600">
-                      {workStats.totalHours > 0 ? 
-                        Math.round((workStats.effectiveHours / workStats.totalHours) * 100) : 0}%
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Idle Time:</span>
-                    <span className="font-medium text-red-600">{workStats.idleTime} minutes</span>
-                  </div>
+              <div className="mt-5 pt-5 border-t border-teal-100">
+                <h4 className="text-xs font-bold text-teal-600 uppercase tracking-widest mb-3">Daily Summary</h4>
+                <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-xs">
+                  {[
+                    { label:'Work Started',  val: todayRecords.find(r => r.type==='in')?.time || '--:--', color:'' },
+                    { label:'Total Breaks',  val: workStats.teaBreakCount + workStats.lunchBreakCount,    color:'' },
+                    { label:'Productivity',  val: `${efficiency}%`,  color:'text-teal-500' },
+                    { label:'Idle Time',     val: `${workStats.idleTime} mins`, color:'text-rose-400' },
+                  ].map((row, i) => (
+                    <div key={i} className="flex items-center justify-between gap-2">
+                      <span className="text-teal-400">{row.label}</span>
+                      <span className={`font-semibold text-teal-700 ${row.color}`}>{row.val}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <button className="py-3 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2">
-                  <FiBarChart2 className="text-lg" />
-                  <span>View Weekly Report</span>
-                </button>
-                <button className="py-3 px-4 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center space-x-2">
-                  <FiDownload className="text-lg" />
-                  <span>Export Data</span>
-                </button>
-                <button className="py-3 px-4 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center space-x-2">
-                  <FiUser className="text-lg" />
-                  <span>My Performance</span>
-                </button>
-                <button className="py-3 px-4 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors flex items-center justify-center space-x-2">
-                  <FiCalendar className="text-lg" />
-                  <span>Attendance History</span>
-                </button>
+            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
+              <h3 className="text-sm font-bold text-teal-800 mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { icon: <FiBarChart2 />, label:'Weekly Report',      bg:'bg-teal-50  border-teal-100  text-teal-600  hover:bg-teal-100'  },
+                  { icon: <FiDownload  />, label:'Export Data',         bg:'bg-cyan-50  border-cyan-100  text-cyan-600  hover:bg-cyan-100'  },
+                  { icon: <FiUser      />, label:'My Performance',      bg:'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100' },
+                  { icon: <FiCalendar  />, label:'Attendance History',  bg:'bg-teal-50  border-teal-100  text-teal-600  hover:bg-teal-100'  },
+                ].map((a, i) => (
+                  <button
+                    key={i}
+                    className={`flex items-center justify-center gap-2 py-3 px-3 border rounded-xl text-xs font-semibold transition-all ${a.bg}`}
+                  >
+                    <span className="text-base">{a.icon}</span>
+                    <span>{a.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
+
           </div>
         </div>
       </div>

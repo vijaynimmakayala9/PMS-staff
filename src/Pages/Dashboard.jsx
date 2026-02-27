@@ -7,26 +7,23 @@ import {
   FiTrendingUp,
   FiCalendar,
   FiStar,
-  FiTarget,
   FiBarChart2,
-  FiActivity,
-  FiAward,
   FiSettings,
   FiLogOut,
   FiMail,
   FiPhone,
-  FiMapPin
+  FiAward,
 } from "react-icons/fi";
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
   Tooltip,
   LineChart,
   Line,
   CartesianGrid,
-  ResponsiveContainer
+  ResponsiveContainer,
 } from "recharts";
 
 const StaffPersonalDashboard = () => {
@@ -44,8 +41,8 @@ const StaffPersonalDashboard = () => {
         department: "Sales",
         position: "Senior Executive",
         joinDate: "2022-01-15",
-        contact: { 
-          email: "raj.sharma@company.com", 
+        contact: {
+          email: "raj.sharma@company.com",
           phone: "+91-9876543210",
         },
         manager: "Priya Patel",
@@ -64,7 +61,7 @@ const StaffPersonalDashboard = () => {
           { id: 1, title: "Client Meeting Prep", status: "completed", dueDate: "2024-01-10" },
           { id: 2, title: "Sales Report", status: "completed", dueDate: "2024-01-12" },
           { id: 3, title: "Budget Planning", status: "in-progress", dueDate: "2024-01-20" },
-        ]
+        ],
       },
       performance: {
         efficiency: 92,
@@ -77,7 +74,7 @@ const StaffPersonalDashboard = () => {
       },
       leaveBalance: {
         total: 35,
-        taken: 5
+        taken: 5,
       },
       charts: {
         attendanceData: {
@@ -87,7 +84,7 @@ const StaffPersonalDashboard = () => {
             { day: "Wed", hours: 8.0 },
             { day: "Thu", hours: 7.5 },
             { day: "Fri", hours: 8.5 },
-          ]
+          ],
         },
         performanceData: {
           weekly: [
@@ -96,165 +93,254 @@ const StaffPersonalDashboard = () => {
             { day: "Wed", efficiency: 85 },
             { day: "Thu", efficiency: 90 },
             { day: "Fri", efficiency: 95 },
-          ]
-        }
-      }
+          ],
+        },
+      },
     };
 
-    setDashboardData(mockData);
-    setLoading(false);
+    setTimeout(() => {
+      setDashboardData(mockData);
+      setLoading(false);
+    }, 600);
   }, []);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
+      <div className="flex justify-center items-center h-screen bg-teal-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600 text-sm">Loading...</p>
+          <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-teal-400 mx-auto" />
+          <p className="mt-3 text-teal-500 text-sm font-medium">Loading dashboard…</p>
         </div>
       </div>
     );
   }
 
+  const { personalInfo, attendance, tasks, performance, salary, leaveBalance, charts } = dashboardData;
+  const initials = personalInfo.name.split(" ").map((n) => n[0]).join("");
+
+  // ── Stat cards ──────────────────────────────────────────────────────────────
+  const stats = [
+    {
+      label: "Attendance",
+      value: attendance.attendancePercentage,
+      sub: `${attendance.presentThisMonth} days present`,
+      icon: <FiClock className="text-teal-500 text-xl" />,
+      bg: "bg-teal-50",
+      border: "border-teal-200",
+    },
+    {
+      label: "Tasks Done",
+      value: `${tasks.completed}/${tasks.assigned}`,
+      sub: `${tasks.pending} pending`,
+      icon: <FiCheckCircle className="text-emerald-500 text-xl" />,
+      bg: "bg-emerald-50",
+      border: "border-emerald-200",
+    },
+    {
+      label: "Performance",
+      value: `${performance.efficiency}%`,
+      sub: performance.rank,
+      icon: <FiTrendingUp className="text-cyan-500 text-xl" />,
+      bg: "bg-cyan-50",
+      border: "border-cyan-200",
+    },
+    {
+      label: "Net Salary",
+      value: `₹${salary.netSalary.toLocaleString()}`,
+      sub: `Paid ${salary.lastSalaryDate}`,
+      icon: <FiDollarSign className="text-teal-600 text-xl" />,
+      bg: "bg-teal-50",
+      border: "border-teal-200",
+    },
+  ];
+
+  // ── Quick actions ────────────────────────────────────────────────────────────
+  const actions = [
+    { label: "Punch", icon: <FiClock className="text-teal-500 text-lg" />, bg: "hover:bg-teal-100" },
+    { label: "Leave", icon: <FiCalendar className="text-emerald-500 text-lg" />, bg: "hover:bg-emerald-100" },
+    { label: "Report", icon: <FiBarChart2 className="text-cyan-500 text-lg" />, bg: "hover:bg-cyan-100" },
+    { label: "Salary", icon: <FiDollarSign className="text-teal-600 text-lg" />, bg: "hover:bg-teal-100" },
+  ];
+
+  // ── Custom chart tooltip ─────────────────────────────────────────────────────
+  const ChartTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white border border-teal-200 rounded-lg px-3 py-2 shadow-md text-xs text-teal-700">
+          <p className="font-semibold mb-0.5">{label}</p>
+          <p>{payload[0].name}: <span className="font-bold text-teal-500">{payload[0].value}</span></p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="bg-gray-50 min-h-screen p-4">
-      {/* Header */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-800">Welcome, {dashboardData.personalInfo.name}!</h1>
-            <p className="text-gray-600 text-sm">Your performance overview</p>
+    <div className="bg-teal-50/40 min-h-screen p-3 sm:p-5">
+
+      {/* ── Page Header ───────────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold text-teal-800">
+            Welcome back, <span className="text-teal-500">{personalInfo.name.split(" ")[0]}</span>!
+          </h1>
+          <p className="text-teal-400 text-xs sm:text-sm mt-0.5">Your performance overview for today</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-teal-200 text-teal-400 hover:bg-teal-50 hover:text-teal-600 hover:border-teal-400 transition-all">
+            <FiSettings className="text-base" />
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-teal-200 text-teal-400 hover:bg-red-50 hover:text-red-400 hover:border-red-200 transition-all">
+            <FiLogOut className="text-base" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Profile Card ──────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-5 mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          {/* Avatar */}
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
+              {initials}
+            </div>
+            <div className="sm:hidden">
+              <h2 className="font-bold text-teal-800 text-base">{personalInfo.name}</h2>
+              <p className="text-teal-500 text-sm">{personalInfo.position}</p>
+              <span className="inline-block mt-1 bg-teal-50 text-teal-500 border border-teal-200 rounded-full text-[10px] font-semibold px-2 py-0.5">
+                {personalInfo.employeeId}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <button className="p-1 text-gray-600 hover:bg-white rounded transition-colors">
-              <FiSettings className="text-lg" />
-            </button>
-            <button className="p-1 text-gray-600 hover:bg-white rounded transition-colors">
-              <FiLogOut className="text-lg" />
-            </button>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <div className="hidden sm:block mb-1">
+              <h2 className="font-bold text-teal-800 text-base">{personalInfo.name}</h2>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                <p className="text-teal-500 text-sm">{personalInfo.position}</p>
+                <span className="w-1 h-1 rounded-full bg-teal-200" />
+                <span className="bg-teal-50 text-teal-500 border border-teal-200 rounded-full text-[10px] font-semibold px-2 py-0.5">
+                  {personalInfo.employeeId}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 sm:mt-3">
+              <div className="bg-teal-50 border border-teal-100 rounded-xl px-3 py-2">
+                <p className="text-[10px] text-teal-400 font-medium uppercase tracking-wide">Department</p>
+                <p className="text-sm font-semibold text-teal-700 mt-0.5">{personalInfo.department}</p>
+              </div>
+              <div className="bg-teal-50 border border-teal-100 rounded-xl px-3 py-2">
+                <p className="text-[10px] text-teal-400 font-medium uppercase tracking-wide">Manager</p>
+                <p className="text-sm font-semibold text-teal-700 mt-0.5">{personalInfo.manager}</p>
+              </div>
+              <div className="bg-teal-50 border border-teal-100 rounded-xl px-3 py-2">
+                <p className="text-[10px] text-teal-400 font-medium uppercase tracking-wide">Joined</p>
+                <p className="text-sm font-semibold text-teal-700 mt-0.5">{personalInfo.joinDate}</p>
+              </div>
+              <div className="bg-teal-50 border border-teal-100 rounded-xl px-3 py-2">
+                <p className="text-[10px] text-teal-400 font-medium uppercase tracking-wide">Rating</p>
+                <p className="text-sm font-semibold text-teal-700 mt-0.5 flex items-center gap-1">
+                  {performance.rating}/5 <FiStar className="text-teal-400 text-xs" />
+                </p>
+              </div>
+            </div>
+
+            {/* Contact row */}
+            <div className="flex flex-wrap gap-3 mt-3">
+              <div className="flex items-center gap-1.5 text-xs text-teal-500">
+                <FiMail className="flex-shrink-0" />
+                <span className="truncate max-w-[180px]">{personalInfo.contact.email}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-teal-500">
+                <FiPhone className="flex-shrink-0" />
+                <span>{personalInfo.contact.phone}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Personal Info */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-            {dashboardData.personalInfo.name.split(' ').map(n => n[0]).join('')}
+      {/* ── Stat Cards ────────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        {stats.map((s, i) => (
+          <div
+            key={i}
+            className={`bg-white border ${s.border} rounded-2xl shadow-sm p-3 sm:p-4 flex items-center gap-3`}
+          >
+            <div className={`w-10 h-10 rounded-xl ${s.bg} border ${s.border} flex items-center justify-center flex-shrink-0`}>
+              {s.icon}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-teal-400 font-medium">{s.label}</p>
+              <p className="text-base sm:text-lg font-bold text-teal-800 leading-tight">{s.value}</p>
+              <p className="text-[10px] text-teal-400 truncate">{s.sub}</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h2 className="font-bold text-gray-800">{dashboardData.personalInfo.name}</h2>
-            <p className="text-gray-600 text-sm">{dashboardData.personalInfo.position}</p>
-            <p className="text-gray-500 text-xs">ID: {dashboardData.personalInfo.employeeId}</p>
-          </div>
-          <div className="text-right text-xs text-gray-600">
-            <p>{dashboardData.personalInfo.department}</p>
-            <p>Manager: {dashboardData.personalInfo.manager}</p>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-white rounded-lg shadow-sm p-3">
-          <div className="flex items-center justify-between">
+      {/* ── Charts ────────────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        {/* Work Hours Chart */}
+        <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-gray-600 text-xs">Attendance</p>
-              <p className="font-bold text-gray-800">{dashboardData.attendance.attendancePercentage}</p>
+              <h3 className="text-sm font-bold text-teal-800">Work Hours</h3>
+              <p className="text-[11px] text-teal-400 mt-0.5">Hours logged per day</p>
             </div>
-            <FiClock className="text-blue-500 text-lg" />
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-xs">Tasks Done</p>
-              <p className="font-bold text-gray-800">{dashboardData.tasks.completed}/{dashboardData.tasks.assigned}</p>
-            </div>
-            <FiCheckCircle className="text-green-500 text-lg" />
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-xs">Performance</p>
-              <p className="font-bold text-gray-800">{dashboardData.performance.efficiency}%</p>
-            </div>
-            <FiTrendingUp className="text-purple-500 text-lg" />
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-sm p-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-xs">Salary</p>
-              <p className="font-bold text-gray-800">₹{dashboardData.salary.netSalary.toLocaleString()}</p>
-            </div>
-            <FiDollarSign className="text-orange-500 text-lg" />
-          </div>
-        </div>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 gap-4 mb-4">
-        {/* Work Hours */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-gray-800 text-sm">Work Hours</h3>
-            <select 
-              className="border border-gray-300 rounded text-xs px-2 py-1"
+            <select
+              className="text-xs border border-teal-200 bg-teal-50 text-teal-600 rounded-lg px-2 py-1.5 focus:outline-none focus:border-teal-400"
               value={attendanceFilter}
               onChange={(e) => setAttendanceFilter(e.target.value)}
             >
-              <option value="weekly">Weekly</option>
+              <option value="weekly">This Week</option>
             </select>
           </div>
-          <div className="h-40">
+          <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dashboardData.charts.attendanceData[attendanceFilter]}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="day" fontSize={10} />
-                <YAxis fontSize={10} />
-                <Tooltip />
-                <Bar 
-                  dataKey="hours" 
-                  name="Hours"
-                  fill="#3b82f6"
-                  radius={[2, 2, 0, 0]}
-                />
+              <BarChart data={charts.attendanceData[attendanceFilter]} barSize={28}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0faf8" />
+                <XAxis dataKey="day" fontSize={11} tick={{ fill: "#5eada8" }} axisLine={false} tickLine={false} />
+                <YAxis fontSize={11} tick={{ fill: "#5eada8" }} axisLine={false} tickLine={false} />
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(6,202,188,0.06)" }} />
+                <Bar dataKey="hours" name="Hours" fill="#06cabc" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Performance */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-gray-800 text-sm">Performance</h3>
-            <select 
-              className="border border-gray-300 rounded text-xs px-2 py-1"
+        {/* Performance Chart */}
+        <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-teal-800">Performance</h3>
+              <p className="text-[11px] text-teal-400 mt-0.5">Efficiency % per day</p>
+            </div>
+            <select
+              className="text-xs border border-teal-200 bg-teal-50 text-teal-600 rounded-lg px-2 py-1.5 focus:outline-none focus:border-teal-400"
               value={performanceFilter}
               onChange={(e) => setPerformanceFilter(e.target.value)}
             >
-              <option value="weekly">Weekly</option>
+              <option value="weekly">This Week</option>
             </select>
           </div>
-          <div className="h-40">
+          <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dashboardData.charts.performanceData[performanceFilter]}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="day" fontSize={10} />
-                <YAxis fontSize={10} />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="efficiency" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={2}
+              <LineChart data={charts.performanceData[performanceFilter]}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0faf8" />
+                <XAxis dataKey="day" fontSize={11} tick={{ fill: "#5eada8" }} axisLine={false} tickLine={false} />
+                <YAxis fontSize={11} tick={{ fill: "#5eada8" }} axisLine={false} tickLine={false} domain={[80, 100]} />
+                <Tooltip content={<ChartTooltip />} />
+                <Line
+                  type="monotone"
+                  dataKey="efficiency"
+                  stroke="#06cabc"
+                  strokeWidth={2.5}
                   name="Efficiency %"
-                  dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 3 }}
+                  dot={{ fill: "#06cabc", strokeWidth: 2, r: 4, stroke: "#ffffff" }}
+                  activeDot={{ r: 6, fill: "#06cabc" }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -262,24 +348,46 @@ const StaffPersonalDashboard = () => {
         </div>
       </div>
 
-      {/* Tasks and Details */}
-      <div className="grid grid-cols-1 gap-4 mb-4">
-        {/* Tasks */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <h3 className="font-semibold text-gray-800 text-sm mb-3">Recent Tasks</h3>
-          <div className="space-y-2">
-            {dashboardData.tasks.recentTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900 text-sm">{task.title}</h4>
-                  <p className="text-gray-500 text-xs">Due: {task.dueDate}</p>
+      {/* ── Tasks + Quick Info ─────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+
+        {/* Recent Tasks */}
+        <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-teal-800">Recent Tasks</h3>
+            <span className="text-[11px] bg-teal-50 text-teal-500 border border-teal-200 rounded-full px-2 py-0.5 font-semibold">
+              {tasks.completed}/{tasks.assigned} done
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full bg-teal-50 rounded-full h-1.5 mb-4">
+            <div
+              className="bg-teal-400 h-1.5 rounded-full transition-all"
+              style={{ width: tasks.completionRate }}
+            />
+          </div>
+
+          <div className="space-y-0.5">
+            {tasks.recentTasks.map((task) => (
+              <div
+                key={task.id}
+                className="flex items-center justify-between py-2.5 border-b border-teal-50 last:border-b-0"
+              >
+                <div className="flex-1 min-w-0 pr-3">
+                  <p className="text-sm font-medium text-teal-800 truncate">{task.title}</p>
+                  <p className="text-[11px] text-teal-400 mt-0.5">Due: {task.dueDate}</p>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                  task.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {task.status.replace('-', ' ')}
+                <span
+                  className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
+                    task.status === "completed"
+                      ? "bg-teal-100 text-teal-600 border border-teal-200"
+                      : task.status === "in-progress"
+                      ? "bg-cyan-100 text-cyan-600 border border-cyan-200"
+                      : "bg-amber-100 text-amber-600 border border-amber-200"
+                  }`}
+                >
+                  {task.status.replace("-", " ")}
                 </span>
               </div>
             ))}
@@ -287,47 +395,68 @@ const StaffPersonalDashboard = () => {
         </div>
 
         {/* Quick Info */}
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <h3 className="font-semibold text-gray-800 text-sm mb-3">Quick Info</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 text-sm">Leave Balance</span>
-              <span className="font-medium text-sm">{dashboardData.leaveBalance.total} days</span>
+        <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 flex flex-col gap-3">
+          <h3 className="text-sm font-bold text-teal-800">Quick Info</h3>
+
+          {[
+            {
+              label: "Leave Balance",
+              value: `${leaveBalance.total - leaveBalance.taken} days left`,
+              sub: `${leaveBalance.taken} taken`,
+              icon: <FiCalendar className="text-teal-400" />,
+            },
+            {
+              label: "Performance Rating",
+              value: `${performance.rating} / 5.0`,
+              sub: performance.rank,
+              icon: <FiStar className="text-teal-400" />,
+            },
+            {
+              label: "Last Salary",
+              value: `₹${salary.netSalary.toLocaleString()}`,
+              sub: `on ${salary.lastSalaryDate}`,
+              icon: <FiDollarSign className="text-teal-400" />,
+            },
+            {
+              label: "Attendance Rate",
+              value: attendance.attendancePercentage,
+              sub: `${attendance.absentThisMonth} absent this month`,
+              icon: <FiAward className="text-teal-400" />,
+            },
+          ].map((item, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 bg-teal-50 border border-teal-100 rounded-xl px-3 py-2.5"
+            >
+              <div className="w-8 h-8 rounded-lg bg-white border border-teal-200 flex items-center justify-center flex-shrink-0 text-base">
+                {item.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-teal-400 font-medium">{item.label}</p>
+                <p className="text-sm font-bold text-teal-700 leading-tight">{item.value}</p>
+              </div>
+              <span className="text-[10px] text-teal-400 flex-shrink-0 hidden sm:block">{item.sub}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 text-sm">Rating</span>
-              <span className="font-medium text-sm">{dashboardData.performance.rating}/5</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 text-sm">Last Salary</span>
-              <span className="font-medium text-sm">{dashboardData.salary.lastSalaryDate}</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <h3 className="font-semibold text-gray-800 text-sm mb-3">Quick Actions</h3>
-        <div className="grid grid-cols-4 gap-2">
-          <button className="flex flex-col items-center p-2 bg-blue-50 rounded hover:bg-blue-100 transition-colors">
-            <FiClock className="text-blue-600 text-sm mb-1" />
-            <span className="text-xs text-gray-700">Punch</span>
-          </button>
-          <button className="flex flex-col items-center p-2 bg-green-50 rounded hover:bg-green-100 transition-colors">
-            <FiCalendar className="text-green-600 text-sm mb-1" />
-            <span className="text-xs text-gray-700">Leave</span>
-          </button>
-          <button className="flex flex-col items-center p-2 bg-purple-50 rounded hover:bg-purple-100 transition-colors">
-            <FiBarChart2 className="text-purple-600 text-sm mb-1" />
-            <span className="text-xs text-gray-700">Report</span>
-          </button>
-          <button className="flex flex-col items-center p-2 bg-orange-50 rounded hover:bg-orange-100 transition-colors">
-            <FiDollarSign className="text-orange-600 text-sm mb-1" />
-            <span className="text-xs text-gray-700">Salary</span>
-          </button>
+      {/* ── Quick Actions ─────────────────────────────────────────────────────── */}
+      <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4">
+        <h3 className="text-sm font-bold text-teal-800 mb-3">Quick Actions</h3>
+        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          {actions.map((a, i) => (
+            <button
+              key={i}
+              className={`flex flex-col items-center justify-center gap-1.5 py-3 sm:py-4 bg-teal-50 border border-teal-100 rounded-xl ${a.bg} hover:border-teal-300 transition-all duration-150`}
+            >
+              {a.icon}
+              <span className="text-[11px] sm:text-xs font-medium text-teal-600">{a.label}</span>
+            </button>
+          ))}
         </div>
       </div>
+
     </div>
   );
 };
