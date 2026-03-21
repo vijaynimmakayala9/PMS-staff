@@ -37,8 +37,8 @@ const LockIcon = () => (
 const EyeIcon = ({ off }) => (
   <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
     {off
-      ? <><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></>
-      : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>
+      ? <><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></>
+      : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>
     }
   </svg>
 );
@@ -82,14 +82,14 @@ const Spinner = ({ dark = false }) => (
 
 /* ── Design tokens ───────────────────────────────────────── */
 const C = {
-  grad:    'linear-gradient(135deg,#06cabc,#04b0a3)',
-  glow:    '0 8px 24px rgba(6,202,188,0.42)',
-  glowLg:  '0 12px 36px rgba(6,202,188,0.52)',
-  card:    '0 24px 64px rgba(6,202,188,0.16),0 4px 20px rgba(0,0,0,0.07)',
-  border:  'rgba(6,202,188,0.22)',
-  soft:    'rgba(6,202,188,0.08)',
-  teal:    '#06cabc',
-  dark:    '#04a899',
+  grad: 'linear-gradient(135deg,#06cabc,#04b0a3)',
+  glow: '0 8px 24px rgba(6,202,188,0.42)',
+  glowLg: '0 12px 36px rgba(6,202,188,0.52)',
+  card: '0 24px 64px rgba(6,202,188,0.16),0 4px 20px rgba(0,0,0,0.07)',
+  border: 'rgba(6,202,188,0.22)',
+  soft: 'rgba(6,202,188,0.08)',
+  teal: '#06cabc',
+  dark: '#04a899',
 };
 
 const pageBg = {
@@ -162,8 +162,8 @@ const Steps = ({ active }) => {
         style={done(n)
           ? { background: 'rgba(6,202,188,0.15)', color: C.teal }
           : isActive(n)
-          ? { background: C.grad, boxShadow: '0 4px 12px rgba(6,202,188,0.45)' }
-          : {}}>
+            ? { background: C.grad, boxShadow: '0 4px 12px rgba(6,202,188,0.45)' }
+            : {}}>
         {done(n) ? '✓' : n}
       </div>
       <span className={`text-xs font-medium hidden sm:block ${isActive(n) ? 'font-semibold' : 'text-gray-400'}`}
@@ -194,13 +194,13 @@ const Steps = ({ active }) => {
 /* ── Input helper ────────────────────────────────────────── */
 const onFocus = e => {
   e.target.style.borderColor = '#06cabc';
-  e.target.style.background  = '#fff';
-  e.target.style.boxShadow   = '0 0 0 4px rgba(6,202,188,0.12)';
+  e.target.style.background = '#fff';
+  e.target.style.boxShadow = '0 0 0 4px rgba(6,202,188,0.12)';
 };
 const onBlur = e => {
   e.target.style.borderColor = 'transparent';
-  e.target.style.background  = 'rgba(6,202,188,0.07)';
-  e.target.style.boxShadow   = 'none';
+  e.target.style.background = 'rgba(6,202,188,0.07)';
+  e.target.style.boxShadow = 'none';
 };
 
 const delay = ms => new Promise(r => setTimeout(r, ms));
@@ -212,19 +212,19 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
 const LoginPage = () => {
   const navigate = useNavigate();
 
-  const [screen,     setScreen]     = useState('login');
+  const [screen, setScreen] = useState('login');
   const [employeeId, setEmployeeId] = useState('');
-  const [password,   setPassword]   = useState('');
-  const [showPwd,    setShowPwd]    = useState(false);
-  const [error,      setError]      = useState('');
-  const [loading,    setLoading]    = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Camera
-  const [camState,  setCamState]  = useState('idle'); // idle|requesting|active|error
-  const [captured,  setCaptured]  = useState(null);
-  const [faceOk,    setFaceOk]    = useState(null);   // null|true|false
+  const [camState, setCamState] = useState('idle'); // idle|requesting|active|error
+  const [captured, setCaptured] = useState(null);
+  const [faceOk, setFaceOk] = useState(null);   // null|true|false
 
-  const videoRef  = useRef(null);
+  const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
 
@@ -246,10 +246,10 @@ const LoginPage = () => {
       setCamState('active');
     } catch (err) {
       const msg =
-        err.name === 'NotAllowedError'  ? 'Camera permission denied. Please click Allow in your browser.' :
-        err.name === 'NotFoundError'    ? 'No camera found on this device.' :
-        err.name === 'NotReadableError' ? 'Camera is in use by another app.' :
-                                          `Camera error: ${err.message}`;
+        err.name === 'NotAllowedError' ? 'Camera permission denied. Please click Allow in your browser.' :
+          err.name === 'NotFoundError' ? 'No camera found on this device.' :
+            err.name === 'NotReadableError' ? 'Camera is in use by another app.' :
+              `Camera error: ${err.message}`;
       setError(msg);
       setCamState('error');
     }
@@ -323,8 +323,10 @@ const LoginPage = () => {
         setFaceOk(success);
         setLoading(false);
         if (success) {
-          delay(1200).then(() => setScreen('done'));
-          navigate('/dashboard');
+          delay(1200).then(() => {
+            setScreen('done')
+            navigate('/dashboard');
+          });
         } else {
           delay(1200).then(() => {
             setError('');
@@ -522,10 +524,10 @@ const LoginPage = () => {
                 {faceOk === false
                   ? 'Verification failed — redirecting to password…'
                   : captured
-                  ? verifying ? 'Analysing your face…' : 'Photo ready. Confirm or retake.'
-                  : camState === 'requesting' ? 'Requesting camera permission…'
-                  : camState === 'error' ? 'Could not access camera.'
-                  : 'Centre your face in the oval and hold still.'}
+                    ? verifying ? 'Analysing your face…' : 'Photo ready. Confirm or retake.'
+                    : camState === 'requesting' ? 'Requesting camera permission…'
+                      : camState === 'error' ? 'Could not access camera.'
+                        : 'Centre your face in the oval and hold still.'}
               </p>
             </div>
 
