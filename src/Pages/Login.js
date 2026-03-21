@@ -324,6 +324,7 @@ const LoginPage = () => {
         setLoading(false);
         if (success) {
           delay(1200).then(() => setScreen('done'));
+          navigate('/dashboard');
         } else {
           delay(1200).then(() => {
             setError('');
