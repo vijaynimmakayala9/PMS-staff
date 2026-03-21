@@ -322,7 +322,7 @@ const LoginPage = () => {
         const success = true; // change to: await faceAPI.verify(captured)
         setFaceOk(success);
         setLoading(false);
-        if (success) {
+        if (success) { 
           delay(1200).then(() => {
             setScreen('done')
             navigate('/dashboard');
