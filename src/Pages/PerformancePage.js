@@ -14,468 +14,688 @@ import {
   FiDownload,
   FiArrowUp,
   FiArrowDown,
-  FiEye
+  FiEye,
+  FiZap
 } from 'react-icons/fi';
+
+const style = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+
+  :root {
+    --teal-50:  #f0fdfa;
+    --teal-100: #ccfbf1;
+    --teal-200: #99f6e4;
+    --teal-300: #5eead4;
+    --teal-400: #2dd4bf;
+    --teal-500: #14b8a6;
+    --teal-600: #0d9488;
+    --teal-700: #0f766e;
+    --teal-800: #115e59;
+    --teal-900: #134e4a;
+    --slate-50:  #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --surface: #ffffff;
+    --surface-2: #f8fffe;
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 1px 3px rgba(13,148,136,0.08);
+    --shadow-md: 0 4px 16px rgba(13,148,136,0.10), 0 2px 6px rgba(13,148,136,0.06);
+    --shadow-lg: 0 10px 40px rgba(13,148,136,0.14), 0 4px 12px rgba(13,148,136,0.08);
+    --shadow-glow: 0 0 0 3px rgba(20,184,166,0.15);
+  }
+
+  * { box-sizing: border-box; }
+
+  .pp-root {
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0fdfa 0%, #e6faf7 40%, #f0fdf9 70%, #ecfdf5 100%);
+    position: relative;
+    overflow-x: hidden;
+  }
+  .pp-root::before {
+    content: '';
+    position: fixed; top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(20,184,166,0.09) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .pp-root::after {
+    content: '';
+    position: fixed; bottom: -150px; left: -150px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(13,148,136,0.07) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .pp-inner {
+    position: relative; z-index: 1;
+    max-width: 1280px; margin: 0 auto;
+    padding: 24px 16px 64px;
+  }
+  @media (min-width: 640px)  { .pp-inner { padding: 32px 24px 64px; } }
+  @media (min-width: 1024px) { .pp-inner { padding: 40px 40px 80px; } }
+
+  /* ── Header ── */
+  .pp-header {
+    display: flex; flex-direction: column; gap: 16px;
+    margin-bottom: 36px;
+  }
+  @media (min-width: 640px) {
+    .pp-header { flex-direction: row; align-items: flex-start; justify-content: space-between; }
+  }
+  .pp-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 4vw, 32px);
+    font-weight: 800;
+    color: var(--teal-800);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    display: flex; align-items: center; gap: 12px;
+    margin: 0 0 6px 0;
+  }
+  .pp-title-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--teal-400), var(--teal-600));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 19px; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(13,148,136,0.3);
+  }
+  .pp-subtitle { font-size: 14px; color: var(--slate-500); margin: 0; }
+
+  .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .select-filter {
+    padding: 10px 32px 10px 14px;
+    border: 1.5px solid var(--teal-100);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: var(--slate-600); background: var(--surface-2);
+    outline: none; cursor: pointer;
+    transition: all 0.2s;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+  }
+  .select-filter:focus { border-color: var(--teal-400); box-shadow: var(--shadow-glow); }
+
+  .btn-export {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: linear-gradient(135deg, var(--teal-500), var(--teal-600));
+    color: #fff; border: none; border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(13,148,136,0.28);
+    white-space: nowrap;
+  }
+  .btn-export:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(13,148,136,0.38);
+    background: linear-gradient(135deg, var(--teal-400), var(--teal-500));
+  }
+
+  /* ── Stat Cards ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px; margin-bottom: 24px;
+  }
+  @media (min-width: 768px)  { .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+
+  .stat-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 20px 18px;
+    border: 1px solid rgba(20,184,166,0.10);
+    box-shadow: var(--shadow-md);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; bottom: 0; width: 4px;
+    background: var(--accent, var(--teal-400));
+    border-radius: 0 2px 2px 0;
+  }
+  .stat-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .stat-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .stat-label { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3.5vw, 28px); font-weight: 800;
+    line-height: 1; margin: 6px 0 2px;
+  }
+  .stat-sub { font-size: 11px; }
+  .stat-bar-track { width: 100%; height: 5px; border-radius: 3px; margin-top: 14px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+  .stat-trend { display: flex; align-items: center; gap: 5px; margin-top: 10px; font-size: 12px; font-weight: 500; }
+
+  /* ── Card base ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(20,184,166,0.10);
+    overflow: hidden;
+  }
+  .card-padded { padding: 24px; }
+  @media (min-width: 640px) { .card-padded { padding: 26px 28px; } }
+
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--teal-800);
+    display: flex; align-items: center; gap: 8px; margin: 0;
+  }
+  .card-title-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--teal-100), var(--teal-200));
+    display: flex; align-items: center; justify-content: center;
+    color: var(--teal-600); font-size: 13px;
+  }
+  .card-badge {
+    font-size: 11px; font-weight: 600;
+    background: var(--teal-50); color: var(--teal-700);
+    border: 1px solid var(--teal-200); padding: 3px 10px; border-radius: 20px;
+  }
+
+  /* ── Grids ── */
+  .grid-2-1 { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+  @media (min-width: 1024px) { .grid-2-1 { grid-template-columns: 2fr 1fr; gap: 24px; } }
+
+  .grid-1-1 { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+  @media (min-width: 768px)  { .grid-1-1 { grid-template-columns: 1fr 1fr; gap: 24px; } }
+
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (min-width: 768px)  { .grid-4 { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+
+  /* ── Productivity Chart ── */
+  .chart-wrap {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    height: 160px; gap: 6px; padding-bottom: 28px;
+    margin-top: 16px;
+  }
+  .chart-col { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+  .chart-bar-outer {
+    width: 100%; background: var(--teal-50);
+    border-radius: 6px 6px 0 0;
+    border: 1px solid var(--teal-100);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    height: 120px; overflow: hidden; position: relative;
+  }
+  .chart-bar-inner {
+    background: linear-gradient(to top, var(--teal-600), var(--teal-400));
+    border-radius: 5px 5px 0 0;
+    transition: height 0.7s ease;
+    position: relative;
+  }
+  .chart-score {
+    font-size: 11px; font-weight: 700; color: var(--teal-700);
+    margin-top: 6px; text-align: center;
+  }
+  .chart-month { font-size: 10px; color: var(--slate-400); font-weight: 500; margin-top: 2px; }
+
+  /* ── Task Distribution ── */
+  .dist-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .dist-row:last-child { margin-bottom: 0; }
+  .dist-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dist-label { font-size: 13px; color: var(--slate-600); flex: 1; margin-left: 10px; }
+  .dist-bar-wrap { display: flex; align-items: center; gap: 8px; }
+  .dist-track { width: 80px; height: 6px; background: var(--slate-100); border-radius: 3px; overflow: hidden; }
+  @media (min-width: 480px) { .dist-track { width: 100px; } }
+  .dist-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .dist-count { font-size: 12px; font-weight: 700; color: var(--slate-700); width: 24px; text-align: right; }
+
+  .section-divider { height: 1px; background: var(--teal-100); margin: 20px 0; }
+  .subsection-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700; color: var(--teal-800); margin: 0 0 14px 0;
+  }
+
+  .pri-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .pri-row:last-child { margin-bottom: 0; }
+  .pri-label { font-size: 12px; font-weight: 500; color: var(--slate-600); text-transform: capitalize; min-width: 56px; }
+  .pri-bar-wrap { display: flex; align-items: center; gap: 8px; flex: 1; margin-left: 8px; }
+  .pri-track { flex: 1; height: 7px; background: var(--slate-100); border-radius: 4px; overflow: hidden; }
+  .pri-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .pri-pct { font-size: 12px; font-weight: 700; color: var(--teal-700); width: 36px; text-align: right; }
+
+  /* ── Weekly Performance ── */
+  .weekly-row {
+    display: flex; align-items: center;
+    margin-bottom: 10px; gap: 10px;
+  }
+  .weekly-row:last-child { margin-bottom: 0; }
+  .weekly-day { font-size: 12px; font-weight: 600; color: var(--slate-600); width: 30px; flex-shrink: 0; }
+  .weekly-track { flex: 1; height: 8px; background: var(--teal-50); border-radius: 4px; overflow: hidden; border: 1px solid var(--teal-100); }
+  .weekly-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+  .weekly-pct { font-size: 11px; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0; }
+  .weekly-tasks { font-size: 11px; color: var(--slate-400); width: 44px; text-align: right; flex-shrink: 0; white-space: nowrap; }
+
+  /* ── Team Comparison ── */
+  .team-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 14px; border-radius: var(--radius-md);
+    margin-bottom: 8px; transition: all 0.15s ease;
+  }
+  .team-row:last-child { margin-bottom: 0; }
+  .team-row-self {
+    background: var(--teal-50);
+    border: 1.5px solid var(--teal-200);
+  }
+  .team-row-other {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-100);
+  }
+  .team-row-other:hover { background: var(--teal-50); border-color: var(--teal-100); }
+  .team-left { display: flex; align-items: center; gap: 10px; }
+  .team-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800;
+    color: #fff; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--teal-400), var(--teal-600));
+  }
+  .team-avatar-self { background: linear-gradient(135deg, var(--teal-500), var(--teal-700)); }
+  .team-name { font-size: 13px; font-weight: 600; color: var(--slate-700); }
+  .team-name-self { color: var(--teal-700); }
+  .team-eff { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--slate-500); margin-top: 2px; }
+  .team-score { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; color: var(--teal-700); }
+  .team-tasks { font-size: 11px; color: var(--slate-400); text-align: right; }
+
+  /* ── Achievements ── */
+  .ach-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (min-width: 768px) { .ach-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+
+  .ach-card {
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    border: 1px solid #fde68a;
+    transition: all 0.2s ease;
+    position: relative; overflow: hidden;
+  }
+  .ach-card::before {
+    content: '';
+    position: absolute; top: -20px; right: -20px;
+    width: 70px; height: 70px;
+    background: rgba(251,191,36,0.1); border-radius: 50%;
+  }
+  .ach-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(245,158,11,0.2); }
+  .ach-icon-wrap {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(251,191,36,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 10px;
+  }
+  .ach-title { font-size: 13px; font-weight: 700; color: var(--slate-800); margin: 0 0 4px 0; }
+  .ach-desc { font-size: 11px; color: var(--slate-500); line-height: 1.4; margin: 0 0 10px 0; }
+  .ach-footer { display: flex; align-items: center; justify-content: space-between; }
+  .ach-date { font-size: 10px; color: var(--slate-400); }
+  .ach-pts { font-size: 11px; font-weight: 700; color: #d97706; background: rgba(217,119,6,0.1); padding: 2px 8px; border-radius: 20px; }
+
+  /* ── Bottom Insight Panels ── */
+  .insight-panel {
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    position: relative; overflow: hidden;
+    color: #fff;
+  }
+  .insight-panel::before {
+    content: '';
+    position: absolute; top: -50px; right: -50px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.07); border-radius: 50%;
+  }
+  .insight-panel::after {
+    content: '';
+    position: absolute; bottom: -40px; left: -40px;
+    width: 120px; height: 120px;
+    background: rgba(255,255,255,0.04); border-radius: 50%;
+  }
+  .insight-panel-teal { background: linear-gradient(135deg, var(--teal-600), var(--teal-800)); box-shadow: 0 8px 32px rgba(13,148,136,0.35); }
+  .insight-panel-emerald { background: linear-gradient(135deg, #059669, #0f766e); box-shadow: 0 8px 32px rgba(5,150,105,0.3); }
+  .insight-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+    margin: 0 0 16px 0; position: relative; z-index: 1;
+    color: #fff;
+  }
+  .insight-list { display: flex; flex-direction: column; gap: 11px; position: relative; z-index: 1; }
+  .insight-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.45; }
+  .insight-bullet { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.6); margin-top: 5px; flex-shrink: 0; }
+`;
+
+const performanceData = {
+  overallScore: 87,
+  tasksCompleted: 156,
+  avgCompletionTime: 2.3,
+  onTimeRate: 94,
+  efficiency: 112,
+  productivityTrend: [
+    { month: 'Jan', score: 78 },
+    { month: 'Feb', score: 82 },
+    { month: 'Mar', score: 85 },
+    { month: 'Apr', score: 87 },
+    { month: 'May', score: 90 },
+    { month: 'Jun', score: 87 },
+  ],
+  taskBreakdown: [
+    { type: 'Completed',   count: 156, dot: '#22c55e', fill: '#22c55e' },
+    { type: 'In Progress', count: 12,  dot: '#06b6d4', fill: '#06b6d4' },
+    { type: 'Pending',     count: 8,   dot: '#f59e0b', fill: '#f59e0b' },
+    { type: 'Overdue',     count: 3,   dot: '#ef4444', fill: '#ef4444' },
+  ],
+  priorityPerformance: [
+    { priority: 'High',   rate: 94, color: '#ef4444' },
+    { priority: 'Medium', rate: 95, color: '#f59e0b' },
+    { priority: 'Low',    rate: 87, color: 'var(--teal-500)' },
+  ],
+  achievements: [
+    { id: 1, title: 'Early Bird',       description: 'Completed 10+ tasks before deadline',       icon: '🏆', date: '2024-06-15', points: 50  },
+    { id: 2, title: 'Efficiency Master',description: 'Maintained 120%+ efficiency for 2 weeks',  icon: '⚡', date: '2024-06-10', points: 75  },
+    { id: 3, title: 'Task Champion',    description: 'Completed 50 tasks in a month',             icon: '🎯', date: '2024-06-05', points: 100 },
+    { id: 4, title: 'Quality Star',     description: 'Zero revisions needed for 20 tasks',        icon: '⭐', date: '2024-05-28', points: 60  },
+  ],
+  teamStats: [
+    { name: 'You',          score: 87, tasks: 156, efficiency: 112, trend: 'up'   },
+    { name: 'Alex Chen',    score: 82, tasks: 142, efficiency: 105, trend: 'up'   },
+    { name: 'Priya Sharma', score: 79, tasks: 138, efficiency: 98,  trend: 'down' },
+    { name: 'Mike Johnson', score: 85, tasks: 148, efficiency: 108, trend: 'up'   },
+    { name: 'Sarah Wilson', score: 91, tasks: 162, efficiency: 118, trend: 'up'   },
+  ],
+  weeklyPerformance: [
+    { day: 'Mon', productivity: 85, tasks: 8  },
+    { day: 'Tue', productivity: 92, tasks: 10 },
+    { day: 'Wed', productivity: 88, tasks: 9  },
+    { day: 'Thu', productivity: 95, tasks: 11 },
+    { day: 'Fri', productivity: 82, tasks: 7  },
+    { day: 'Sat', productivity: 65, tasks: 4  },
+    { day: 'Sun', productivity: 45, tasks: 2  },
+  ],
+};
+
+const weeklyFillColor = p => p >= 90 ? 'var(--teal-500)' : p >= 70 ? '#f59e0b' : '#ef4444';
 
 const PerformancePage = () => {
   const [timeRange, setTimeRange] = useState('month');
-  const [performanceStats, setPerformanceStats] = useState({});
-  const [productivityData, setProductivityData] = useState([]);
-  const [taskDistribution, setTaskDistribution] = useState([]);
-  const [recentAchievements, setRecentAchievements] = useState([]);
-  const [teamComparison, setTeamComparison] = useState([]);
+  const totalTasks = performanceData.taskBreakdown.reduce((s, i) => s + i.count, 0);
 
-  // Static performance data
-  const performanceData = {
-    overallScore: 87,
-    tasksCompleted: 156,
-    avgCompletionTime: 2.3,
-    onTimeRate: 94,
-    efficiency: 112,
-    productivityTrend: [
-      { month: 'Jan', score: 78, tasks: 32 },
-      { month: 'Feb', score: 82, tasks: 35 },
-      { month: 'Mar', score: 85, tasks: 38 },
-      { month: 'Apr', score: 87, tasks: 42 },
-      { month: 'May', score: 90, tasks: 45 },
-      { month: 'Jun', score: 87, tasks: 41 }
-    ],
-    taskBreakdown: [
-      { type: 'Completed', count: 156, color: 'bg-green-500' },
-      { type: 'In Progress', count: 12, color: 'bg-blue-500' },
-      { type: 'Pending', count: 8, color: 'bg-yellow-500' },
-      { type: 'Overdue', count: 3, color: 'bg-red-500' }
-    ],
-    priorityPerformance: [
-      { priority: 'High', completed: 45, total: 48, rate: 94 },
-      { priority: 'Medium', completed: 78, total: 82, rate: 95 },
-      { priority: 'Low', completed: 33, total: 38, rate: 87 }
-    ],
-    achievements: [
-      { id: 1, title: 'Early Bird', description: 'Completed 10+ tasks before deadline', icon: '🏆', date: '2024-06-15', points: 50 },
-      { id: 2, title: 'Efficiency Master', description: 'Maintained 120%+ efficiency for 2 weeks', icon: '⚡', date: '2024-06-10', points: 75 },
-      { id: 3, title: 'Task Champion', description: 'Completed 50 tasks in a month', icon: '🎯', date: '2024-06-05', points: 100 },
-      { id: 4, title: 'Quality Star', description: 'Zero revisions needed for 20 tasks', icon: '⭐', date: '2024-05-28', points: 60 }
-    ],
-    teamStats: [
-      { name: 'You', score: 87, tasks: 156, efficiency: 112, trend: 'up' },
-      { name: 'Alex Chen', score: 82, tasks: 142, efficiency: 105, trend: 'up' },
-      { name: 'Priya Sharma', score: 79, tasks: 138, efficiency: 98, trend: 'down' },
-      { name: 'Mike Johnson', score: 85, tasks: 148, efficiency: 108, trend: 'up' },
-      { name: 'Sarah Wilson', score: 91, tasks: 162, efficiency: 118, trend: 'up' }
-    ],
-    weeklyPerformance: [
-      { day: 'Mon', productivity: 85, tasks: 8 },
-      { day: 'Tue', productivity: 92, tasks: 10 },
-      { day: 'Wed', productivity: 88, tasks: 9 },
-      { day: 'Thu', productivity: 95, tasks: 11 },
-      { day: 'Fri', productivity: 82, tasks: 7 },
-      { day: 'Sat', productivity: 65, tasks: 4 },
-      { day: 'Sun', productivity: 45, tasks: 2 }
-    ]
-  };
-
-  useEffect(() => {
-    loadPerformanceData();
-  }, [timeRange]);
-
-  const loadPerformanceData = () => {
-    setPerformanceStats({
-      overallScore: performanceData.overallScore,
-      tasksCompleted: performanceData.tasksCompleted,
-      avgCompletionTime: performanceData.avgCompletionTime,
-      onTimeRate: performanceData.onTimeRate,
-      efficiency: performanceData.efficiency
-    });
-    setProductivityData(performanceData.productivityTrend);
-    setTaskDistribution(performanceData.taskBreakdown);
-    setRecentAchievements(performanceData.achievements);
-    setTeamComparison(performanceData.teamStats);
-  };
-
-  const getScoreColor = (score) => {
-    if (score >= 90) return 'text-green-500';
-    if (score >= 80) return 'text-yellow-500';
-    return 'text-red-500';
-  };
-
-  const getScoreBg = (score) => {
-    if (score >= 90) return 'bg-green-500';
-    if (score >= 80) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
-
-  const getTrendIcon = (trend) => {
-    return trend === 'up' ? 
-      <FiArrowUp className="text-green-500" /> : 
-      <FiArrowDown className="text-red-500" />;
-  };
-
-  const exportReport = () => {
-    alert('Performance report exported successfully!');
-  };
-
-  // Calculate total tasks for percentage calculation
-  const totalTasks = taskDistribution.reduce((sum, item) => sum + item.count, 0);
+  const statCards = [
+    {
+      label: 'Overall Score', value: `${performanceData.overallScore}/100`, sub: 'Performance rating',
+      accent: 'var(--teal-400)', iconBg: 'var(--teal-50)', iconColor: 'var(--teal-600)',
+      labelColor: 'var(--teal-600)', valueColor: 'var(--teal-800)', subColor: 'var(--teal-500)',
+      icon: <FiAward />,
+      bar: true, barPct: performanceData.overallScore, barFill: 'var(--teal-500)', barTrack: 'var(--teal-100)',
+      trend: '+5 pts this month', trendColor: '#16a34a',
+    },
+    {
+      label: 'Tasks Completed', value: performanceData.tasksCompleted, sub: 'Total completed',
+      accent: '#22c55e', iconBg: '#f0fdf4', iconColor: '#16a34a',
+      labelColor: '#16a34a', valueColor: '#14532d', subColor: '#15803d',
+      icon: <FiCheckCircle />,
+      trend: '+12% from last month', trendColor: '#16a34a',
+    },
+    {
+      label: 'Avg. Completion', value: `${performanceData.avgCompletionTime}d`, sub: 'Per task',
+      accent: '#a78bfa', iconBg: '#f5f3ff', iconColor: '#7c3aed',
+      labelColor: '#7c3aed', valueColor: '#4c1d95', subColor: '#6d28d9',
+      icon: <FiClock />,
+      trend: '−0.5 days improvement', trendColor: '#16a34a',
+    },
+    {
+      label: 'Efficiency', value: `${performanceData.efficiency}%`, sub: 'Vs estimated',
+      accent: '#fb923c', iconBg: '#fff7ed', iconColor: '#c2410c',
+      labelColor: '#c2410c', valueColor: '#7c2d12', subColor: '#ea580c',
+      icon: <FiTarget />,
+      trend: '+8% better than target', trendColor: '#16a34a',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="pp-root">
+      <style>{style}</style>
+      <div className="pp-inner">
+
         {/* Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8">
+        <div className="pp-header">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800 flex items-center">
-              <FiActivity className="text-blue-600 mr-3" />
+            <h1 className="pp-title">
+              <span className="pp-title-icon"><FiActivity /></span>
               Performance Analytics
             </h1>
-            <p className="text-gray-600 mt-2">Track your productivity, efficiency, and performance metrics</p>
+            <p className="pp-subtitle">Track your productivity, efficiency, and performance metrics</p>
           </div>
-          <div className="flex space-x-3 mt-4 lg:mt-0">
-            <select
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-            >
+          <div className="header-actions">
+            <select className="select-filter" value={timeRange} onChange={e => setTimeRange(e.target.value)}>
               <option value="week">Last Week</option>
               <option value="month">Last Month</option>
               <option value="quarter">Last Quarter</option>
               <option value="year">Last Year</option>
             </select>
-            <button 
-              onClick={exportReport}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-            >
-              <FiDownload className="text-lg" />
-              <span>Export Report</span>
+            <button className="btn-export" onClick={() => alert('Exported!')}>
+              <FiDownload style={{ fontSize: 14 }} /> Export Report
             </button>
           </div>
         </div>
 
-        {/* Main Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Overall Performance Score */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Overall Score</p>
-                <p className={`text-3xl font-bold ${getScoreColor(performanceStats.overallScore)} mt-2`}>
-                  {performanceStats.overallScore}/100
-                </p>
-                <p className="text-xs text-gray-500 mt-1">Performance Rating</p>
+        {/* Stats */}
+        <div className="stats-grid">
+          {statCards.map((s, i) => (
+            <div key={i} className="stat-card" style={{ '--accent': s.accent }}>
+              <div className="stat-top">
+                <div>
+                  <div className="stat-label" style={{ color: s.labelColor }}>{s.label}</div>
+                  <div className="stat-value" style={{ color: s.valueColor }}>{s.value}</div>
+                  <div className="stat-sub" style={{ color: s.subColor }}>{s.sub}</div>
+                </div>
+                <div className="stat-icon" style={{ background: s.iconBg, color: s.iconColor }}>{s.icon}</div>
               </div>
-              <div className={`p-3 rounded-full ${getScoreBg(performanceStats.overallScore)} bg-opacity-10`}>
-                <FiAward className={`text-2xl ${getScoreColor(performanceStats.overallScore)}`} />
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mt-4">
-              <div 
-                className={`h-2 rounded-full ${getScoreBg(performanceStats.overallScore)}`}
-                style={{ width: `${performanceStats.overallScore}%` }}
-              ></div>
-            </div>
-          </div>
-
-          {/* Tasks Completed */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Tasks Completed</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">{performanceStats.tasksCompleted}</p>
-                <p className="text-xs text-gray-500 mt-1">Total Completed</p>
-              </div>
-              <div className="p-3 rounded-full bg-green-500 bg-opacity-10">
-                <FiCheckCircle className="text-2xl text-green-500" />
+              {s.bar && (
+                <div className="stat-bar-track" style={{ background: s.barTrack }}>
+                  <div className="stat-bar-fill" style={{ width: `${s.barPct}%`, background: s.barFill }} />
+                </div>
+              )}
+              <div className="stat-trend" style={{ color: s.trendColor }}>
+                <FiTrendingUp style={{ fontSize: 12 }} /> {s.trend}
               </div>
             </div>
-            <div className="flex items-center mt-2">
-              <FiTrendingUp className="text-green-500 mr-1" />
-              <span className="text-sm text-green-600">+12% from last month</span>
-            </div>
-          </div>
-
-          {/* Average Completion Time */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Avg. Completion</p>
-                <p className="text-3xl font-bold text-purple-600 mt-2">{performanceStats.avgCompletionTime}d</p>
-                <p className="text-xs text-gray-500 mt-1">Per Task</p>
-              </div>
-              <div className="p-3 rounded-full bg-purple-500 bg-opacity-10">
-                <FiClock className="text-2xl text-purple-500" />
-              </div>
-            </div>
-            <div className="flex items-center mt-2">
-              <FiTrendingUp className="text-green-500 mr-1" />
-              <span className="text-sm text-green-600">-0.5 days improvement</span>
-            </div>
-          </div>
-
-          {/* Efficiency Score */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 font-medium">Efficiency</p>
-                <p className="text-3xl font-bold text-orange-600 mt-2">{performanceStats.efficiency}%</p>
-                <p className="text-xs text-gray-500 mt-1">Vs Estimated</p>
-              </div>
-              <div className="p-3 rounded-full bg-orange-500 bg-opacity-10">
-                <FiTarget className="text-2xl text-orange-500" />
-              </div>
-            </div>
-            <div className="flex items-center mt-2">
-              <FiTrendingUp className="text-green-500 mr-1" />
-              <span className="text-sm text-green-600">+8% better than target</span>
-            </div>
-          </div>
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {/* Productivity Trend Chart */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                  <FiTrendingUp className="text-blue-500 mr-2" />
-                  Productivity Trend
-                </h2>
-                <span className="text-sm text-gray-500">Last 6 Months</span>
-              </div>
-              
-              <div className="flex items-end justify-between h-48 mt-8">
-                {productivityData.map((month, index) => (
-                  <div key={index} className="flex flex-col items-center space-y-2 flex-1">
-                    <div className="flex flex-col justify-end h-32 w-full bg-gray-100 rounded-t-lg relative">
-                      <div 
-                        className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg transition-all duration-500"
-                        style={{ height: `${month.score}%` }}
-                      ></div>
-                      <div className="absolute -bottom-6 text-center w-full">
-                        <div className="text-sm font-medium text-gray-700">{month.score}</div>
-                        <div className="text-xs text-gray-500">{month.month}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Task Distribution */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-              <FiPieChart className="text-purple-500 mr-2" />
-              Task Distribution
-            </h2>
-            
-            <div className="space-y-4">
-              {taskDistribution.map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                    <span className="text-sm text-gray-700">{item.type}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-24 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full ${item.color}`}
-                        style={{ 
-                          width: `${totalTasks > 0 ? (item.count / totalTasks) * 100 : 0}%` 
-                        }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-700 w-8">{item.count}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Priority Performance</h3>
-              <div className="space-y-3">
-                {performanceData.priorityPerformance.map((priority, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 capitalize">{priority.priority}</span>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-20 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${
-                            priority.priority === 'high' ? 'bg-red-500' :
-                            priority.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
-                          }`}
-                          style={{ width: `${priority.rate}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-700 w-12">
-                        {priority.rate}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Weekly Performance */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
-              <FiCalendar className="text-green-500 mr-2" />
-              Weekly Performance
-            </h2>
-            
-            <div className="space-y-4">
-              {performanceData.weeklyPerformance.map((day, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 w-12">{day.day}</span>
-                  <div className="flex-1 mx-4">
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div 
-                        className={`h-3 rounded-full ${
-                          day.productivity >= 90 ? 'bg-green-500' : 
-                          day.productivity >= 70 ? 'bg-yellow-500' : 'bg-red-500'
-                        }`}
-                        style={{ width: `${day.productivity}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-4 text-right">
-                    <span className="text-sm text-gray-600 w-16">{day.productivity}%</span>
-                    <span className="text-sm text-gray-500 w-8">{day.tasks} tasks</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Team Comparison */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-800 flex items-center">
-                <FiUser className="text-indigo-500 mr-2" />
-                Team Comparison
+        {/* Productivity Chart + Distribution */}
+        <div className="grid-2-1">
+          <div className="card card-padded">
+            <div className="card-header">
+              <h2 className="card-title">
+                <span className="card-title-icon"><FiTrendingUp /></span>
+                Productivity Trend
               </h2>
-              <span className="text-sm text-gray-500">This Month</span>
+              <span className="card-badge">Last 6 Months</span>
             </div>
-            
-            <div className="space-y-4">
-              {teamComparison.map((member, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
-                  member.name === 'You' ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
-                }`}>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                      {member.name.charAt(0)}
-                    </div>
-                    <div>
-                      <span className={`font-medium ${
-                        member.name === 'You' ? 'text-blue-700' : 'text-gray-700'
-                      }`}>
-                        {member.name}
-                      </span>
-                      <div className="flex items-center space-x-1">
-                        {getTrendIcon(member.trend)}
-                        <span className="text-xs text-gray-500">{member.efficiency}% efficiency</span>
-                      </div>
-                    </div>
+            <div className="chart-wrap">
+              {performanceData.productivityTrend.map((m, i) => (
+                <div key={i} className="chart-col">
+                  <div className="chart-bar-outer">
+                    <div className="chart-bar-inner" style={{ height: `${m.score}%` }} />
                   </div>
-                  
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-800">{member.score}</div>
-                    <div className="text-xs text-gray-500">{member.tasks} tasks</div>
-                  </div>
+                  <div className="chart-score">{m.score}</div>
+                  <div className="chart-month">{m.month}</div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Achievements Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center">
-              <FiStar className="text-yellow-500 mr-2" />
-              Recent Achievements
-            </h2>
-            <span className="text-sm text-gray-500">{recentAchievements.length} achievements</span>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {recentAchievements.map((achievement) => (
-              <div key={achievement.id} className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-4 border border-yellow-200 hover:shadow-md transition-shadow">
-                <div className="flex items-center space-x-3">
-                  <div className="text-2xl">{achievement.icon}</div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800">{achievement.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{achievement.description}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-gray-500">
-                        {new Date(achievement.date).toLocaleDateString()}
-                      </span>
-                      <span className="text-xs font-medium text-orange-600">
-                        +{achievement.points} pts
-                      </span>
-                    </div>
+          <div className="card card-padded">
+            <div className="card-header">
+              <h2 className="card-title">
+                <span className="card-title-icon"><FiPieChart /></span>
+                Task Distribution
+              </h2>
+            </div>
+            {performanceData.taskBreakdown.map((item, i) => (
+              <div key={i} className="dist-row">
+                <div className="dist-dot" style={{ background: item.dot }} />
+                <span className="dist-label">{item.type}</span>
+                <div className="dist-bar-wrap">
+                  <div className="dist-track">
+                    <div className="dist-fill" style={{ width: `${(item.count / totalTasks) * 100}%`, background: item.fill }} />
                   </div>
+                  <span className="dist-count">{item.count}</span>
+                </div>
+              </div>
+            ))}
+
+            <div className="section-divider" />
+            <p className="subsection-title">Priority Performance</p>
+            {performanceData.priorityPerformance.map((p, i) => (
+              <div key={i} className="pri-row">
+                <span className="pri-label">{p.priority}</span>
+                <div className="pri-bar-wrap">
+                  <div className="pri-track">
+                    <div className="pri-fill" style={{ width: `${p.rate}%`, background: p.color }} />
+                  </div>
+                  <span className="pri-pct">{p.rate}%</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Performance Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-6 text-white">
-            <h3 className="text-lg font-bold mb-4 flex items-center">
-              <FiEye className="mr-2" />
-              Performance Insights
-            </h3>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <FiTrendingUp className="mr-2 mt-1 text-green-300" />
-                <span>Your productivity has increased by 15% over the last quarter</span>
-              </li>
-              <li className="flex items-start">
-                <FiTarget className="mr-2 mt-1 text-blue-300" />
-                <span>You consistently exceed efficiency targets by 8-12%</span>
-              </li>
-              <li className="flex items-start">
-                <FiClock className="mr-2 mt-1 text-yellow-300" />
-                <span>Average task completion time improved by 18% this month</span>
-              </li>
-              <li className="flex items-start">
-                <FiAward className="mr-2 mt-1 text-red-300" />
-                <span>Ranked #2 in team performance for this quarter</span>
-              </li>
-            </ul>
+        {/* Weekly + Team */}
+        <div className="grid-1-1">
+          <div className="card card-padded">
+            <div className="card-header">
+              <h2 className="card-title">
+                <span className="card-title-icon"><FiCalendar /></span>
+                Weekly Performance
+              </h2>
+            </div>
+            {performanceData.weeklyPerformance.map((d, i) => (
+              <div key={i} className="weekly-row">
+                <span className="weekly-day">{d.day}</span>
+                <div className="weekly-track">
+                  <div className="weekly-fill" style={{ width: `${d.productivity}%`, background: weeklyFillColor(d.productivity) }} />
+                </div>
+                <span className="weekly-pct" style={{ color: weeklyFillColor(d.productivity) }}>{d.productivity}%</span>
+                <span className="weekly-tasks">{d.tasks} tasks</span>
+              </div>
+            ))}
           </div>
 
-          <div className="bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl p-6 text-white">
-            <h3 className="text-lg font-bold mb-4 flex items-center">
-              <FiStar className="mr-2" />
-              Recommendations
-            </h3>
-            <ul className="space-y-3">
-              <li className="flex items-start">
-                <div className="w-2 h-2 bg-white rounded-full mt-2 mr-3"></div>
-                <span>Focus on completing high-priority tasks in the morning for better efficiency</span>
-              </li>
-              <li className="flex items-start">
-                <div className="w-2 h-2 bg-white rounded-full mt-2 mr-3"></div>
-                <span>Take regular breaks to maintain consistent productivity throughout the week</span>
-              </li>
-              <li className="flex items-start">
-                <div className="w-2 h-2 bg-white rounded-full mt-2 mr-3"></div>
-                <span>Consider delegating low-priority tasks to focus on strategic work</span>
-              </li>
-              <li className="flex items-start">
-                <div className="w-2 h-2 bg-white rounded-full mt-2 mr-3"></div>
-                <span>Your peak performance hours are between 10 AM - 12 PM</span>
-              </li>
-            </ul>
+          <div className="card card-padded">
+            <div className="card-header">
+              <h2 className="card-title">
+                <span className="card-title-icon"><FiUser /></span>
+                Team Comparison
+              </h2>
+              <span className="card-badge">This Month</span>
+            </div>
+            {performanceData.teamStats.map((m, i) => {
+              const isSelf = m.name === 'You';
+              return (
+                <div key={i} className={`team-row ${isSelf ? 'team-row-self' : 'team-row-other'}`}>
+                  <div className="team-left">
+                    <div className={`team-avatar ${isSelf ? 'team-avatar-self' : ''}`}>
+                      {m.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className={`team-name ${isSelf ? 'team-name-self' : ''}`}>{m.name}</div>
+                      <div className="team-eff">
+                        {m.trend === 'up'
+                          ? <FiArrowUp style={{ color: '#22c55e', fontSize: 11 }} />
+                          : <FiArrowDown style={{ color: '#ef4444', fontSize: 11 }} />}
+                        {m.efficiency}% efficiency
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="team-score">{m.score}</div>
+                    <div className="team-tasks">{m.tasks} tasks</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
+
+        {/* Achievements */}
+        <div className="card card-padded" style={{ marginBottom: 20 }}>
+          <div className="card-header">
+            <h2 className="card-title">
+              <span className="card-title-icon"><FiStar /></span>
+              Recent Achievements
+            </h2>
+            <span className="card-badge">{performanceData.achievements.length} unlocked</span>
+          </div>
+          <div className="ach-grid">
+            {performanceData.achievements.map(a => (
+              <div key={a.id} className="ach-card">
+                <div className="ach-icon-wrap">{a.icon}</div>
+                <p className="ach-title">{a.title}</p>
+                <p className="ach-desc">{a.description}</p>
+                <div className="ach-footer">
+                  <span className="ach-date">{new Date(a.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                  <span className="ach-pts">+{a.points} pts</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Panels */}
+        <div className="grid-1-1">
+          <div className="insight-panel insight-panel-teal">
+            <h3 className="insight-title"><FiEye style={{ fontSize: 16 }} /> Performance Insights</h3>
+            <div className="insight-list">
+              {[
+                { icon: <FiTrendingUp style={{ color: '#6ee7b7', fontSize: 14, flexShrink: 0, marginTop: 2 }} />, text: 'Your productivity has increased by 15% over the last quarter' },
+                { icon: <FiTarget style={{ color: '#a5f3fc', fontSize: 14, flexShrink: 0, marginTop: 2 }} />,     text: 'You consistently exceed efficiency targets by 8–12%' },
+                { icon: <FiClock style={{ color: '#fde68a', fontSize: 14, flexShrink: 0, marginTop: 2 }} />,      text: 'Average task completion time improved by 18% this month' },
+                { icon: <FiAward style={{ color: '#fca5a5', fontSize: 14, flexShrink: 0, marginTop: 2 }} />,      text: 'Ranked #2 in team performance for this quarter' },
+              ].map((ins, i) => (
+                <div key={i} className="insight-item">{ins.icon}<span>{ins.text}</span></div>
+              ))}
+            </div>
+          </div>
+
+          <div className="insight-panel insight-panel-emerald">
+            <h3 className="insight-title"><FiStar style={{ color: '#fde68a', fontSize: 16 }} /> Recommendations</h3>
+            <div className="insight-list">
+              {[
+                'Focus on high-priority tasks in the morning for peak efficiency',
+                'Take regular breaks to maintain consistent productivity all week',
+                'Consider delegating low-priority tasks to focus on strategic work',
+                'Your peak performance window is between 10 AM – 12 PM',
+              ].map((text, i) => (
+                <div key={i} className="insight-item">
+                  <div className="insight-bullet" />
+                  <span>{text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

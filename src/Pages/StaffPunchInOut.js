@@ -1,30 +1,217 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  FiClock,
-  FiMapPin,
-  FiCalendar,
-  FiUser,
-  FiCheckCircle,
-  FiAlertCircle,
-  FiDownload,
-  FiBarChart2,
-  FiCoffee,
-  FiSun,
-  FiZap,
+  FiClock, FiMapPin, FiCalendar, FiUser, FiCheckCircle,
+  FiAlertCircle, FiDownload, FiBarChart2, FiCoffee, FiSun, FiZap,
 } from 'react-icons/fi';
 
+const style = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+  :root {
+    --t50:#f0fdfa;--t100:#ccfbf1;--t200:#99f6e4;--t300:#5eead4;--t400:#2dd4bf;
+    --t500:#14b8a6;--t600:#0d9488;--t700:#0f766e;--t800:#115e59;
+    --s400:#94a3b8;--s500:#64748b;--s600:#475569;--s700:#334155;--s800:#1e293b;
+    --sur:#fff;--sur2:#f8fffe;
+    --rsm:8px;--rmd:14px;--rlg:20px;
+    --shmd:0 4px 16px rgba(13,148,136,.10),0 2px 6px rgba(13,148,136,.06);
+    --shlg:0 10px 40px rgba(13,148,136,.14),0 4px 12px rgba(13,148,136,.08);
+    --glow:0 0 0 3px rgba(20,184,166,.16);
+  }
+  *{box-sizing:border-box;}
+  .pio-root{
+    font-family:'DM Sans',sans-serif;min-height:100vh;
+    background:linear-gradient(135deg,#f0fdfa 0%,#e6faf7 40%,#f0fdf9 70%,#ecfdf5 100%);
+    position:relative;overflow-x:hidden;padding:18px 14px 64px;
+  }
+  @media(min-width:480px){.pio-root{padding:22px 18px 64px;}}
+  @media(min-width:640px){.pio-root{padding:28px 24px 72px;}}
+  @media(min-width:1024px){.pio-root{padding:36px 40px 80px;max-width:1200px;margin:0 auto;}}
+  .pio-root::before{content:'';position:fixed;top:-180px;right:-180px;width:500px;height:500px;
+    background:radial-gradient(circle,rgba(20,184,166,.08) 0%,transparent 70%);pointer-events:none;z-index:0;}
+  .pio-root::after{content:'';position:fixed;bottom:-140px;left:-140px;width:440px;height:440px;
+    background:radial-gradient(circle,rgba(13,148,136,.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
+  .pio-root > *{position:relative;z-index:1;}
+
+  /* Header */
+  .pio-hdr{margin-bottom:20px;}
+  .pio-title{font-family:'Syne',sans-serif;font-size:clamp(18px,4vw,26px);font-weight:800;
+    color:var(--t800);letter-spacing:-.5px;margin:0 0 3px;}
+  .pio-sub{font-size:12px;color:var(--s500);margin:0;}
+  @media(min-width:480px){.pio-sub{font-size:13px;}}
+
+  /* Main grid */
+  .pio-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+  @media(min-width:1024px){.pio-grid{grid-template-columns:1fr 1fr;gap:20px;}}
+
+  /* Card */
+  .card{background:var(--sur);border-radius:var(--rlg);box-shadow:var(--shmd);
+    border:1px solid rgba(20,184,166,.10);padding:18px;}
+  @media(min-width:480px){.card{padding:20px 22px;}}
+  .card + .card{margin-top:16px;}
+
+  /* Section title */
+  .sec-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--t800);
+    display:flex;align-items:center;gap:8px;margin:0 0 16px;}
+  .sec-icon{width:27px;height:27px;border-radius:8px;
+    background:linear-gradient(135deg,var(--t100),var(--t200));
+    display:flex;align-items:center;justify-content:center;color:var(--t600);font-size:12px;}
+
+  /* Status header */
+  .status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .status-pill{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid;}
+  .sp-in{background:var(--t50);color:var(--t600);border-color:var(--t200);}
+  .sp-out{background:#fef2f2;color:#dc2626;border-color:#fca5a5;}
+
+  /* Clock */
+  .clock-wrap{text-align:center;margin-bottom:16px;}
+  .clock-time{font-family:'Syne',sans-serif;font-size:clamp(32px,7vw,48px);font-weight:800;
+    color:var(--t800);letter-spacing:-1px;line-height:1;margin-bottom:5px;font-variant-numeric:tabular-nums;}
+  .clock-date{font-size:12px;color:var(--s500);}
+  @media(min-width:480px){.clock-date{font-size:13px;}}
+
+  /* Location */
+  .location-row{display:flex;align-items:center;gap:8px;background:var(--t50);
+    border:1px solid var(--t100);border-radius:var(--rmd);padding:10px 14px;margin-bottom:14px;}
+  .loc-label{font-size:12px;font-weight:600;color:var(--t500);white-space:nowrap;}
+  .loc-select{flex:1;background:transparent;color:var(--t700);font-family:'DM Sans',sans-serif;
+    font-size:13px;font-weight:700;border:none;outline:none;cursor:pointer;min-width:0;}
+
+  /* Punch buttons */
+  .btn-punch-in{
+    width:100%;background:linear-gradient(135deg,var(--t500),var(--t600));color:#fff;
+    border:none;border-radius:var(--rmd);padding:14px;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,.28);
+  }
+  .btn-punch-in:hover{background:linear-gradient(135deg,var(--t400),var(--t500));transform:translateY(-1px);}
+  .btn-punch-in:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+  .break-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .btn-tea{background:#fffbeb;color:#d97706;border:1.5px solid #fde68a;
+    border-radius:var(--rmd);padding:11px;font-family:'DM Sans',sans-serif;
+    font-size:12px;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;}
+  .btn-tea:hover{background:#fef3c7;}
+  .btn-lunch{background:#fff7ed;color:#c2410c;border:1.5px solid #fed7aa;
+    border-radius:var(--rmd);padding:11px;font-family:'DM Sans',sans-serif;
+    font-size:12px;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;}
+  .btn-lunch:hover{background:#ffedd5;}
+  .btn-punch-out{width:100%;background:#fef2f2;color:#dc2626;border:1.5px solid #fca5a5;
+    border-radius:var(--rmd);padding:12px;font-family:'DM Sans',sans-serif;
+    font-size:13px;font-weight:700;cursor:pointer;grid-column:1/-1;
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;}
+  .btn-punch-out:hover{background:#fee2e2;}
+  .btn-punch-out:disabled,.btn-tea:disabled,.btn-lunch:disabled{opacity:.5;cursor:not-allowed;}
+
+  /* Spinner */
+  .spinner-sm{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.3);
+    border-top-color:#fff;animation:spin .6s linear infinite;}
+  .spinner-tea{border-color:rgba(217,119,6,.3);border-top-color:#d97706;}
+  .spinner-lunch{border-color:rgba(194,65,12,.3);border-top-color:#c2410c;}
+  .spinner-out{border-color:rgba(220,38,38,.3);border-top-color:#dc2626;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* Stat tiles */
+  .stat-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  @media(min-width:480px){.stat-tiles{grid-template-columns:repeat(3,1fr);gap:10px;}}
+  .stat-tile{display:flex;flex-direction:column;align-items:center;text-align:center;
+    padding:11px 8px;border-radius:var(--rmd);border:1px solid transparent;transition:all .15s;}
+  .stat-tile:hover{transform:translateY(-2px);box-shadow:var(--shmd);}
+  .st-icon{font-size:16px;margin-bottom:5px;}
+  .st-label{font-size:9px;color:var(--s400);font-weight:600;text-transform:uppercase;
+    letter-spacing:.04em;margin-bottom:2px;}
+  @media(min-width:480px){.st-label{font-size:10px;}}
+  .st-val{font-family:'Syne',sans-serif;font-size:clamp(13px,2.5vw,16px);font-weight:800;color:var(--t800);}
+
+  /* Timeline */
+  .timeline-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .tl-dl-btn{width:27px;height:27px;border-radius:8px;background:var(--t50);
+    border:1px solid var(--t200);display:flex;align-items:center;justify-content:center;
+    color:var(--t400);cursor:pointer;font-size:12px;transition:all .15s;}
+  .tl-dl-btn:hover{background:var(--t100);color:var(--t600);}
+
+  .tl-scroll{max-height:260px;overflow-y:auto;padding-right:2px;}
+  .tl-scroll::-webkit-scrollbar{width:4px;}
+  .tl-scroll::-webkit-scrollbar-track{background:var(--t50);}
+  .tl-scroll::-webkit-scrollbar-thumb{background:var(--t300);border-radius:2px;}
+
+  .tl-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;
+    background:var(--t50);border:1px solid var(--t100);border-radius:var(--rmd);
+    margin-bottom:7px;transition:background .15s;}
+  .tl-item:last-child{margin-bottom:0;}
+  .tl-item:hover{background:var(--t100);}
+  .tl-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+  .tl-content{flex:1;min-width:0;}
+  .tl-label{font-size:12px;font-weight:700;color:var(--t800);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;}
+  .tl-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:10px;color:var(--s400);}
+  .tl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+
+  /* Daily summary */
+  .summary-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--t100);}
+  .summary-label{font-size:10px;font-weight:700;color:var(--t600);text-transform:uppercase;
+    letter-spacing:.06em;margin-bottom:10px;}
+  .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .sum-row{display:flex;align-items:center;justify-content:space-between;
+    font-size:11px;padding:4px 0;}
+  .sum-key{color:var(--s400);}
+  .sum-val{font-weight:700;color:var(--t700);}
+
+  /* Quick actions */
+  .qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  @media(min-width:480px){.qa-grid{gap:10px;}}
+  .qa-btn{display:flex;align-items:center;justify-content:center;gap:7px;
+    padding:11px 10px;border-radius:var(--rmd);font-family:'DM Sans',sans-serif;
+    font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid transparent;}
+  @media(min-width:480px){.qa-btn{font-size:12px;padding:12px 10px;}}
+  .qa-btn:hover{transform:translateY(-1px);box-shadow:var(--shmd);}
+
+  /* Idle popup */
+  .idle-overlay{position:fixed;inset:0;background:rgba(15,118,110,.25);
+    backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;
+    padding:16px;z-index:50;}
+  .idle-modal{background:var(--sur);border:1px solid var(--t100);border-radius:var(--rlg);
+    box-shadow:var(--shlg);padding:24px;max-width:340px;width:100%;text-align:center;}
+  .idle-icon-wrap{width:56px;height:56px;background:#fef9c3;border:1.5px solid #fde68a;
+    border-radius:16px;display:flex;align-items:center;justify-content:center;
+    margin:0 auto 14px;font-size:22px;}
+  .idle-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--t800);margin:0 0 4px;}
+  .idle-sub{font-size:12px;color:var(--s500);margin:0 0 3px;}
+  .idle-time{font-size:11px;color:var(--s400);margin:0 0 8px;}
+  .idle-cta{font-size:12px;font-weight:700;color:var(--t600);margin:0 0 16px;}
+  .idle-btn{width:100%;background:linear-gradient(135deg,var(--t500),var(--t600));color:#fff;
+    border:none;border-radius:var(--rmd);padding:12px;
+    font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+    transition:all .2s;box-shadow:0 4px 12px rgba(13,148,136,.28);}
+  .idle-btn:hover{background:linear-gradient(135deg,var(--t400),var(--t500));}
+
+  /* Empty state */
+  .empty{text-align:center;padding:40px 16px;}
+  .empty-icon{font-size:32px;color:var(--t200);margin-bottom:10px;}
+  .empty-title{font-size:13px;font-weight:600;color:var(--s500);margin:0 0 4px;}
+  .empty-sub{font-size:11px;color:var(--s400);margin:0;}
+`;
+
+const fmtTime = d => d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+const fmtSecs = s => { const m = Math.floor(s/60); return `${m}m ${s%60}s`; };
+
+const recordMeta = type => ({
+  in:          { label:'Punched In — Work Started',  icon:<FiCheckCircle style={{color:'var(--t500)'}}/> },
+  out:         { label:'Punched Out — Work Ended',   icon:<FiCheckCircle style={{color:'#dc2626'}}/> },
+  tea_break:   { label:'Tea Break',                  icon:<FiCoffee      style={{color:'#d97706'}}/> },
+  lunch_break: { label:'Lunch Break',                icon:<FiSun         style={{color:'#c2410c'}}/> },
+}[type] || { label:'Unknown', icon:<FiClock style={{color:'var(--t300)'}}/> });
+
 const StaffPunchInOut = () => {
-  const [currentTime, setCurrentTime]   = useState(new Date());
-  const [punchStatus, setPunchStatus]   = useState('out');
-  const [todayRecords, setTodayRecords] = useState([]);
-  const [location, setLocation]         = useState('Office');
-  const [isLoading, setIsLoading]       = useState(false);
-  const [showIdlePopup, setShowIdlePopup] = useState(false);
-  const [idleTime, setIdleTime]         = useState(0);
-  const [workStats, setWorkStats]       = useState({
-    totalHours: 0, effectiveHours: 0,
-    idleTime: 0, teaBreakCount: 0, lunchBreakCount: 0,
-  });
+  const [currentTime, setCurrentTime]       = useState(new Date());
+  const [punchStatus, setPunchStatus]       = useState('out');
+  const [todayRecords, setTodayRecords]     = useState([]);
+  const [location, setLocation]             = useState('Office');
+  const [isLoading, setIsLoading]           = useState(false);
+  const [showIdlePopup, setShowIdlePopup]   = useState(false);
+  const [idleTime, setIdleTime]             = useState(0);
+  const [workStats, setWorkStats]           = useState({ totalHours:0, effectiveHours:0, idleTime:0, teaBreakCount:0, lunchBreakCount:0 });
 
   const idleTimerRef        = useRef(null);
   const activityTimerRef    = useRef(null);
@@ -32,17 +219,15 @@ const StaffPunchInOut = () => {
   const idleTimeRef         = useRef(0);
   const lastActivityTimeRef = useRef(Date.now());
 
-  /* ── Clock + work-time tick ── */
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
       if (punchStatus === 'in' && punchInTimeRef.current) {
-        const totalMs     = Date.now() - punchInTimeRef.current;
-        const effectiveMs = totalMs - idleTimeRef.current;
-        setWorkStats(p => ({
-          ...p,
-          totalHours:     (totalMs     / 3_600_000).toFixed(2),
-          effectiveHours: (effectiveMs / 3_600_000).toFixed(2),
+        const totalMs = Date.now() - punchInTimeRef.current;
+        const effMs   = totalMs - idleTimeRef.current;
+        setWorkStats(p => ({ ...p,
+          totalHours:     (totalMs / 3_600_000).toFixed(2),
+          effectiveHours: (effMs   / 3_600_000).toFixed(2),
           idleTime:       (idleTimeRef.current / 60_000).toFixed(0),
         }));
       }
@@ -50,28 +235,23 @@ const StaffPunchInOut = () => {
     return () => clearInterval(timer);
   }, [punchStatus]);
 
-  /* ── Idle detection ── */
   useEffect(() => {
-    const handleActivity = () => {
+    const handle = () => {
       lastActivityTimeRef.current = Date.now();
-      setShowIdlePopup(false);
-      setIdleTime(0);
+      setShowIdlePopup(false); setIdleTime(0);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      idleTimerRef.current = setTimeout(() => {
-        setShowIdlePopup(true);
-        startIdleTimer();
-      }, 60_000);
+      idleTimerRef.current = setTimeout(() => { setShowIdlePopup(true); startIdle(); }, 60_000);
     };
-    ['mousemove','keypress','click','scroll'].forEach(e => window.addEventListener(e, handleActivity));
-    handleActivity();
+    ['mousemove','keypress','click','scroll'].forEach(e => window.addEventListener(e, handle));
+    handle();
     return () => {
-      ['mousemove','keypress','click','scroll'].forEach(e => window.removeEventListener(e, handleActivity));
+      ['mousemove','keypress','click','scroll'].forEach(e => window.removeEventListener(e, handle));
       if (idleTimerRef.current)     clearTimeout(idleTimerRef.current);
       if (activityTimerRef.current) clearInterval(activityTimerRef.current);
     };
   }, []);
 
-  const startIdleTimer = () => {
+  const startIdle = () => {
     if (activityTimerRef.current) clearInterval(activityTimerRef.current);
     activityTimerRef.current = setInterval(() => {
       const s = Math.floor((Date.now() - lastActivityTimeRef.current) / 1000) - 60;
@@ -79,309 +259,210 @@ const StaffPunchInOut = () => {
     }, 1000);
   };
 
-  /* ── Mock records ── */
   useEffect(() => {
     setTodayRecords([
-      { id: 1, type: 'in',          time: '09:00 AM', location: 'Office',    status: 'completed' },
-      { id: 2, type: 'tea_break',   time: '11:00 AM', location: 'Pantry',    status: 'completed', duration: '15 mins' },
-      { id: 3, type: 'lunch_break', time: '01:00 PM', location: 'Cafeteria', status: 'completed', duration: '45 mins' },
-      { id: 4, type: 'tea_break',   time: '04:00 PM', location: 'Pantry',    status: 'completed', duration: '10 mins' },
+      { id:1, type:'in',          time:'09:00 AM', location:'Office',    status:'completed' },
+      { id:2, type:'tea_break',   time:'11:00 AM', location:'Pantry',    status:'completed', duration:'15 mins' },
+      { id:3, type:'lunch_break', time:'01:00 PM', location:'Cafeteria', status:'completed', duration:'45 mins' },
+      { id:4, type:'tea_break',   time:'04:00 PM', location:'Pantry',    status:'completed', duration:'10 mins' },
     ]);
   }, []);
 
-  /* ── Actions ── */
-  const withLoading = (fn) => { setIsLoading(true); setTimeout(() => { fn(); setIsLoading(false); }, 900); };
+  const withLoading = fn => { setIsLoading(true); setTimeout(() => { fn(); setIsLoading(false); }, 900); };
 
-  const handlePunchIn = () => withLoading(() => {
+  const handlePunchIn  = () => withLoading(() => {
     const now = new Date();
-    setTodayRecords(p => [{ id: p.length+1, type:'in', time: fmtTime(now), location, status:'completed' }, ...p]);
-    setPunchStatus('in');
-    punchInTimeRef.current = now.getTime();
-    idleTimeRef.current    = 0;
+    setTodayRecords(p => [{ id:p.length+1, type:'in',  time:fmtTime(now), location, status:'completed' }, ...p]);
+    setPunchStatus('in'); punchInTimeRef.current = now.getTime(); idleTimeRef.current = 0;
   });
-
   const handlePunchOut = () => withLoading(() => {
     const now = new Date();
     if (punchInTimeRef.current) {
       const totalMs = now.getTime() - punchInTimeRef.current;
-      setWorkStats(p => ({
-        ...p,
-        totalHours:     (totalMs / 3_600_000).toFixed(2),
-        effectiveHours: ((totalMs - idleTimeRef.current) / 3_600_000).toFixed(2),
-        idleTime:       (idleTimeRef.current / 60_000).toFixed(0),
-      }));
+      setWorkStats(p => ({ ...p, totalHours:(totalMs/3_600_000).toFixed(2), effectiveHours:((totalMs-idleTimeRef.current)/3_600_000).toFixed(2), idleTime:(idleTimeRef.current/60_000).toFixed(0) }));
     }
-    setTodayRecords(p => [{ id: p.length+1, type:'out', time: fmtTime(now), location, status:'completed' }, ...p]);
-    setPunchStatus('out');
-    punchInTimeRef.current = null;
+    setTodayRecords(p => [{ id:p.length+1, type:'out', time:fmtTime(now), location, status:'completed' }, ...p]);
+    setPunchStatus('out'); punchInTimeRef.current = null;
   });
-
-  const handleBreak = (breakType) => withLoading(() => {
+  const handleBreak = t => withLoading(() => {
     const now = new Date();
-    setTodayRecords(p => [{ id: p.length+1, type: breakType, time: fmtTime(now), location, status:'completed' }, ...p]);
-    setWorkStats(p => ({
-      ...p,
-      teaBreakCount:   breakType === 'tea_break'   ? p.teaBreakCount   + 1 : p.teaBreakCount,
-      lunchBreakCount: breakType === 'lunch_break' ? p.lunchBreakCount + 1 : p.lunchBreakCount,
-    }));
+    setTodayRecords(p => [{ id:p.length+1, type:t, time:fmtTime(now), location, status:'completed' }, ...p]);
+    setWorkStats(p => ({ ...p, teaBreakCount: t==='tea_break'?p.teaBreakCount+1:p.teaBreakCount, lunchBreakCount:t==='lunch_break'?p.lunchBreakCount+1:p.lunchBreakCount }));
   });
 
-  const fmtTime = (d) => d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-  const fmtSecs = (s) => { const m = Math.floor(s/60); return `${m}m ${s%60}s`; };
+  const efficiency = workStats.totalHours > 0 ? Math.round((workStats.effectiveHours / workStats.totalHours) * 100) : 0;
 
-  /* ── Record helpers ── */
-  const recordIcon = (type) => ({
-    in:           <FiCheckCircle className="text-teal-500 text-lg flex-shrink-0" />,
-    out:          <FiCheckCircle className="text-rose-400  text-lg flex-shrink-0" />,
-    tea_break:    <FiCoffee      className="text-amber-400 text-lg flex-shrink-0" />,
-    lunch_break:  <FiSun        className="text-orange-400 text-lg flex-shrink-0" />,
-  }[type] || <FiClock className="text-teal-300 text-lg flex-shrink-0" />);
-
-  const recordLabel = (type) => ({
-    in:           'Punched In — Work Started',
-    out:          'Punched Out — Work Ended',
-    tea_break:    'Tea Break',
-    lunch_break:  'Lunch Break',
-  }[type] || 'Unknown');
-
-  const efficiency = workStats.totalHours > 0
-    ? Math.round((workStats.effectiveHours / workStats.totalHours) * 100) : 0;
-
-  /* ── Stat tiles ── */
   const statTiles = [
-    { icon: <FiClock className="text-teal-500 text-xl" />,   label:'Total Hours',     val: `${workStats.totalHours}h`,     bg:'bg-teal-50  border-teal-100'  },
-    { icon: <FiUser  className="text-emerald-500 text-xl" />, label:'Effective Hours',  val: `${workStats.effectiveHours}h`, bg:'bg-emerald-50 border-emerald-100' },
-    { icon: <FiAlertCircle className="text-rose-400 text-xl" />, label:'Idle Time',    val: `${workStats.idleTime}m`,       bg:'bg-rose-50  border-rose-100'  },
-    { icon: <FiCoffee className="text-amber-400 text-xl" />,  label:'Tea Breaks',      val: workStats.teaBreakCount,        bg:'bg-amber-50 border-amber-100' },
-    { icon: <FiSun    className="text-orange-400 text-xl" />, label:'Lunch Breaks',    val: workStats.lunchBreakCount,      bg:'bg-orange-50 border-orange-100'},
-    { icon: <FiZap    className="text-teal-500 text-xl" />,   label:'Efficiency',      val: `${efficiency}%`,               bg:'bg-teal-50  border-teal-100'  },
+    { icon:<FiClock   style={{color:'var(--t500)'}}/>, label:'Total Hours',    val:`${workStats.totalHours}h`,     bg:'var(--t50)',   border:'var(--t100)'   },
+    { icon:<FiUser    style={{color:'#16a34a'}}/>,      label:'Effective Hrs',  val:`${workStats.effectiveHours}h`, bg:'#f0fdf4',     border:'#bbf7d0'       },
+    { icon:<FiAlertCircle style={{color:'#dc2626'}}/>,  label:'Idle Time',      val:`${workStats.idleTime}m`,       bg:'#fef2f2',     border:'#fca5a5'       },
+    { icon:<FiCoffee  style={{color:'#d97706'}}/>,      label:'Tea Breaks',     val:workStats.teaBreakCount,        bg:'#fffbeb',     border:'#fde68a'       },
+    { icon:<FiSun     style={{color:'#c2410c'}}/>,      label:'Lunch Breaks',   val:workStats.lunchBreakCount,      bg:'#fff7ed',     border:'#fed7aa'       },
+    { icon:<FiZap     style={{color:'var(--t500)'}}/>,  label:'Efficiency',     val:`${efficiency}%`,               bg:'var(--t50)',   border:'var(--t100)'   },
+  ];
+
+  const summaryRows = [
+    { key:'Work Started', val: todayRecords.find(r=>r.type==='in')?.time||'--:--' },
+    { key:'Total Breaks', val: workStats.teaBreakCount + workStats.lunchBreakCount },
+    { key:'Productivity',  val:`${efficiency}%`,    color:'var(--t600)' },
+    { key:'Idle Time',     val:`${workStats.idleTime} mins`, color:'#dc2626' },
   ];
 
   return (
-    <div className="min-h-screen bg-teal-50/40 p-3 sm:p-5 lg:p-6">
+    <div className="pio-root">
+      <style>{style}</style>
 
-      {/* ── Idle Popup ──────────────────────────────────────────────────────── */}
+      {/* Idle popup */}
       {showIdlePopup && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-teal-100 rounded-2xl shadow-xl p-6 sm:p-8 max-w-sm w-full text-center">
-            <div className="w-16 h-16 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <FiAlertCircle className="text-amber-400 text-3xl" />
-            </div>
-            <h3 className="text-lg font-bold text-teal-800 mb-1">Hey there! 👋</h3>
-            <p className="text-teal-500 text-sm mb-1">You seem to be away from your desk</p>
-            <p className="text-teal-400 text-xs mb-3">Idle for: {fmtSecs(idleTime)}</p>
-            <p className="text-sm font-semibold text-teal-600 mb-5">Time to get back to work! 🚀</p>
-            <button
-              onClick={() => { setShowIdlePopup(false); setIdleTime(0); lastActivityTimeRef.current = Date.now(); }}
-              className="w-full bg-teal-400 hover:bg-teal-500 text-white font-bold py-2.5 rounded-xl text-sm transition-all"
-            >
+        <div className="idle-overlay">
+          <div className="idle-modal">
+            <div className="idle-icon-wrap"><FiAlertCircle style={{color:'#d97706',fontSize:24}}/></div>
+            <h3 className="idle-title">Hey there! 👋</h3>
+            <p className="idle-sub">You seem to be away from your desk</p>
+            <p className="idle-time">Idle for: {fmtSecs(idleTime)}</p>
+            <p className="idle-cta">Time to get back to work! 🚀</p>
+            <button className="idle-btn" onClick={() => { setShowIdlePopup(false); setIdleTime(0); lastActivityTimeRef.current = Date.now(); }}>
               I'm Back! Let's Work 💪
             </button>
           </div>
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto">
+      <div className="pio-hdr">
+        <h1 className="pio-title">Smart Attendance System</h1>
+        <p className="pio-sub">Track your work hours with intelligent idle detection</p>
+      </div>
 
-        {/* ── Page Header ─────────────────────────────────────────────────────── */}
-        <div className="mb-5 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-teal-800">Smart Attendance System</h1>
-          <p className="text-teal-400 text-sm mt-0.5">Track your work hours with intelligent idle detection</p>
+      <div className="pio-grid">
+        {/* LEFT */}
+        <div>
+          {/* Status card */}
+          <div className="card" style={{marginBottom:16}}>
+            <div className="status-row">
+              <div className="sec-title" style={{margin:0}}><span className="sec-icon"><FiClock/></span>Current Status</div>
+              <span className={`status-pill ${punchStatus==='in'?'sp-in':'sp-out'}`}>
+                {punchStatus==='in'?'● Working':'○ Not Working'}
+              </span>
+            </div>
+
+            <div className="clock-wrap">
+              <div className="clock-time">
+                {currentTime.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+              </div>
+              <p className="clock-date">
+                {currentTime.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+              </p>
+            </div>
+
+            <div className="location-row">
+              <FiMapPin style={{color:'var(--t400)',flexShrink:0}}/>
+              <span className="loc-label">Location:</span>
+              <select className="loc-select" value={location} onChange={e=>setLocation(e.target.value)}>
+                <option value="Office">Office</option>
+                <option value="Work From Home">Work From Home</option>
+                <option value="Client Site">Client Site</option>
+              </select>
+            </div>
+
+            {punchStatus === 'out' ? (
+              <button className="btn-punch-in" onClick={handlePunchIn} disabled={isLoading}>
+                {isLoading ? <div className="spinner-sm"/> : <FiClock style={{fontSize:14}}/>}
+                START WORKING 🚀
+              </button>
+            ) : (
+              <div className="break-grid">
+                <button className="btn-tea" onClick={()=>handleBreak('tea_break')} disabled={isLoading}>
+                  {isLoading?<div className="spinner-sm spinner-tea"/>:<FiCoffee/>} Tea Break
+                </button>
+                <button className="btn-lunch" onClick={()=>handleBreak('lunch_break')} disabled={isLoading}>
+                  {isLoading?<div className="spinner-sm spinner-lunch"/>:<FiSun/>} Lunch Break
+                </button>
+                <button className="btn-punch-out" onClick={handlePunchOut} disabled={isLoading}>
+                  {isLoading?<div className="spinner-sm spinner-out"/>:<FiCheckCircle/>} END WORK DAY
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Analytics card */}
+          <div className="card">
+            <h3 className="sec-title"><span className="sec-icon"><FiBarChart2/></span>Work Analytics</h3>
+            <div className="stat-tiles">
+              {statTiles.map((t,i)=>(
+                <div key={i} className="stat-tile" style={{background:t.bg,borderColor:t.border}}>
+                  <div className="st-icon">{t.icon}</div>
+                  <div className="st-label">{t.label}</div>
+                  <div className="st-val">{t.val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-          {/* ══ LEFT COLUMN ══════════════════════════════════════════════════════ */}
-          <div className="space-y-5">
-
-            {/* Current Status Card */}
-            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-sm font-bold text-teal-800">Current Status</h2>
-                <span className={`px-3 py-1 rounded-full border text-xs font-bold ${
-                  punchStatus === 'in'
-                    ? 'bg-teal-50 text-teal-600 border-teal-200'
-                    : 'bg-rose-50 text-rose-500 border-rose-200'
-                }`}>
-                  {punchStatus === 'in' ? '● Working' : '○ Not Working'}
-                </span>
-              </div>
-
-              {/* Clock */}
-              <div className="text-center mb-5">
-                <div className="text-4xl sm:text-5xl font-bold text-teal-800 tabular-nums leading-none mb-1.5">
-                  {currentTime.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}
-                </div>
-                <p className="text-teal-400 text-sm">
-                  {currentTime.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
-                </p>
-              </div>
-
-              {/* Location selector */}
-              <div className="flex items-center gap-2 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5 mb-5">
-                <FiMapPin className="text-teal-400 flex-shrink-0" />
-                <span className="text-teal-500 text-sm font-medium">Location:</span>
-                <select
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="flex-1 bg-transparent text-teal-700 font-semibold text-sm focus:outline-none cursor-pointer"
-                >
-                  <option value="Office">Office</option>
-                  <option value="Work From Home">Work From Home</option>
-                  <option value="Client Site">Client Site</option>
-                </select>
-              </div>
-
-              {/* Punch buttons */}
-              {punchStatus === 'out' ? (
-                <button
-                  onClick={handlePunchIn}
-                  disabled={isLoading}
-                  className="w-full bg-teal-400 hover:bg-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2.5 shadow-sm"
-                >
-                  {isLoading
-                    ? <div className="w-5 h-5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
-                    : <FiClock className="text-base" />}
-                  <span>START WORKING 🚀</span>
-                </button>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleBreak('tea_break')}
-                    disabled={isLoading}
-                    className="bg-amber-50 border border-amber-200 hover:bg-amber-100 disabled:opacity-50 text-amber-600 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? <div className="w-4 h-4 rounded-full border-2 border-amber-300 border-t-amber-500 animate-spin" /> : <FiCoffee />}
-                    <span>Tea Break</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleBreak('lunch_break')}
-                    disabled={isLoading}
-                    className="bg-orange-50 border border-orange-200 hover:bg-orange-100 disabled:opacity-50 text-orange-500 py-3 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? <div className="w-4 h-4 rounded-full border-2 border-orange-300 border-t-orange-500 animate-spin" /> : <FiSun />}
-                    <span>Lunch Break</span>
-                  </button>
-
-                  <button
-                    onClick={handlePunchOut}
-                    disabled={isLoading}
-                    className="col-span-2 bg-rose-50 border border-rose-200 hover:bg-rose-100 disabled:opacity-50 text-rose-500 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? <div className="w-4 h-4 rounded-full border-2 border-rose-300 border-t-rose-500 animate-spin" /> : <FiCheckCircle />}
-                    <span>END WORK DAY</span>
-                  </button>
+        {/* RIGHT */}
+        <div>
+          {/* Timeline */}
+          <div className="card" style={{marginBottom:16}}>
+            <div className="timeline-hdr">
+              <h3 className="sec-title" style={{margin:0}}><span className="sec-icon"><FiCalendar/></span>Today's Timeline</h3>
+              <button className="tl-dl-btn"><FiDownload/></button>
+            </div>
+            <div className="tl-scroll">
+              {todayRecords.length > 0 ? todayRecords.map(rec => {
+                const meta = recordMeta(rec.type);
+                return (
+                  <div key={rec.id} className="tl-item">
+                    <div className="tl-icon">{meta.icon}</div>
+                    <div className="tl-content">
+                      <p className="tl-label">{meta.label}</p>
+                      <div className="tl-meta">
+                        <span>🕒 {rec.time}</span>
+                        <span>📍 {rec.location}</span>
+                        {rec.duration && <span>⏱ {rec.duration}</span>}
+                      </div>
+                    </div>
+                    <div className="tl-dot" style={{background: rec.status==='completed'?'var(--t400)':'#f59e0b'}}/>
+                  </div>
+                );
+              }) : (
+                <div className="empty">
+                  <div className="empty-icon"><FiClock/></div>
+                  <p className="empty-title">No activity recorded today</p>
+                  <p className="empty-sub">Start working to see your timeline</p>
                 </div>
               )}
             </div>
 
-            {/* Work Analytics */}
-            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
-              <h3 className="text-sm font-bold text-teal-800 flex items-center gap-2 mb-5">
-                <span className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-500">
-                  <FiBarChart2 className="text-sm" />
-                </span>
-                Work Analytics
-              </h3>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {statTiles.map((t, i) => (
-                  <div key={i} className={`flex flex-col items-center text-center p-3 border rounded-xl ${t.bg}`}>
-                    {t.icon}
-                    <p className="text-[10px] text-teal-400 font-medium mt-1.5">{t.label}</p>
-                    <p className="font-bold text-teal-800 text-base leading-tight">{t.val}</p>
+            <div className="summary-section">
+              <p className="summary-label">Daily Summary</p>
+              <div className="summary-grid">
+                {summaryRows.map((r,i)=>(
+                  <div key={i} className="sum-row">
+                    <span className="sum-key">{r.key}</span>
+                    <span className="sum-val" style={r.color?{color:r.color}:{}}>{r.val}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* ══ RIGHT COLUMN ═════════════════════════════════════════════════════ */}
-          <div className="space-y-5">
-
-            {/* Timeline */}
-            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-bold text-teal-800 flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-500">
-                    <FiCalendar className="text-sm" />
-                  </span>
-                  Today's Timeline
-                </h3>
-                <button className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-400 hover:bg-teal-100 hover:text-teal-600 transition-all">
-                  <FiDownload className="text-sm" />
+          {/* Quick actions */}
+          <div className="card">
+            <h3 className="sec-title"><span className="sec-icon"><FiZap/></span>Quick Actions</h3>
+            <div className="qa-grid">
+              {[
+                { icon:<FiBarChart2/>, label:'Weekly Report',     bg:'var(--t50)',  border:'var(--t200)', color:'var(--t600)' },
+                { icon:<FiDownload/>,  label:'Export Data',        bg:'#ecfeff',    border:'#a5f3fc',     color:'#0e7490'    },
+                { icon:<FiUser/>,      label:'My Performance',     bg:'#f0fdf4',    border:'#bbf7d0',     color:'#16a34a'    },
+                { icon:<FiCalendar/>,  label:'Attendance History', bg:'var(--t50)', border:'var(--t200)', color:'var(--t600)' },
+              ].map((a,i)=>(
+                <button key={i} className="qa-btn"
+                  style={{background:a.bg,borderColor:a.border,color:a.color}}>
+                  <span style={{fontSize:14}}>{a.icon}</span>
+                  <span>{a.label}</span>
                 </button>
-              </div>
-
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                {todayRecords.length > 0 ? todayRecords.map((rec) => (
-                  <div
-                    key={rec.id}
-                    className="flex items-start gap-3 p-3 bg-teal-50/60 border border-teal-100 rounded-xl hover:bg-teal-50 transition-all"
-                  >
-                    {recordIcon(rec.type)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-teal-800 truncate">{recordLabel(rec.type)}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-0.5 text-[11px] text-teal-400">
-                        <span>🕒 {rec.time}</span>
-                        <span>📍 {rec.location}</span>
-                        {rec.duration && <span>⏱ {rec.duration}</span>}
-                      </div>
-                    </div>
-                    <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                      rec.status === 'completed' ? 'bg-teal-400' : 'bg-amber-400'
-                    }`} />
-                  </div>
-                )) : (
-                  <div className="text-center py-10">
-                    <FiClock className="text-4xl text-teal-200 mx-auto mb-3" />
-                    <p className="text-sm text-teal-400 font-medium">No activity recorded today</p>
-                    <p className="text-xs text-teal-300 mt-1">Start working to see your timeline</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Daily Summary */}
-              <div className="mt-5 pt-5 border-t border-teal-100">
-                <h4 className="text-xs font-bold text-teal-600 uppercase tracking-widest mb-3">Daily Summary</h4>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 text-xs">
-                  {[
-                    { label:'Work Started',  val: todayRecords.find(r => r.type==='in')?.time || '--:--', color:'' },
-                    { label:'Total Breaks',  val: workStats.teaBreakCount + workStats.lunchBreakCount,    color:'' },
-                    { label:'Productivity',  val: `${efficiency}%`,  color:'text-teal-500' },
-                    { label:'Idle Time',     val: `${workStats.idleTime} mins`, color:'text-rose-400' },
-                  ].map((row, i) => (
-                    <div key={i} className="flex items-center justify-between gap-2">
-                      <span className="text-teal-400">{row.label}</span>
-                      <span className={`font-semibold text-teal-700 ${row.color}`}>{row.val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
-
-            {/* Quick Actions */}
-            <div className="bg-white border border-teal-100 rounded-2xl shadow-sm p-4 sm:p-6">
-              <h3 className="text-sm font-bold text-teal-800 mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { icon: <FiBarChart2 />, label:'Weekly Report',      bg:'bg-teal-50  border-teal-100  text-teal-600  hover:bg-teal-100'  },
-                  { icon: <FiDownload  />, label:'Export Data',         bg:'bg-cyan-50  border-cyan-100  text-cyan-600  hover:bg-cyan-100'  },
-                  { icon: <FiUser      />, label:'My Performance',      bg:'bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100' },
-                  { icon: <FiCalendar  />, label:'Attendance History',  bg:'bg-teal-50  border-teal-100  text-teal-600  hover:bg-teal-100'  },
-                ].map((a, i) => (
-                  <button
-                    key={i}
-                    className={`flex items-center justify-center gap-2 py-3 px-3 border rounded-xl text-xs font-semibold transition-all ${a.bg}`}
-                  >
-                    <span className="text-base">{a.icon}</span>
-                    <span>{a.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
           </div>
         </div>
       </div>

@@ -480,7 +480,7 @@ const LoginPage = () => {
             {/* Demo hint */}
             <div className="mt-5 flex items-center gap-3 p-3.5 rounded-xl" style={{ background: 'rgba(6,202,188,0.07)' }}>
               <div className="w-2 h-2 rounded-full flex-shrink-0 animate-pulse" style={{ background: C.teal }} />
-              <p className="text-xs text-gray-500">Demo password: <strong style={{ color: C.dark }}>password123</strong></p>
+              <p className="text-xs text-gray-500">Demo password: <strong style={{ color: C.dark }}>123456</strong></p>
             </div>
           </div>
 

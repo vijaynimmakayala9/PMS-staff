@@ -128,6 +128,9 @@ const Sidebar = ({ isCollapsed, isMobile, setIsCollapsed }) => {
         { name: "Team Projects", path: "/teamprojects" },
       ]
     },
+    // {
+    //   icon: "ri-message-circle-fill", name: "Team Chat", path: "/teamchat" 
+    // },
     {
       icon: "ri-file-text-fill", name: "Documents", dropdown: [
         { name: "My Documents", path: "/mydocuments" },
