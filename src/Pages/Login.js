@@ -733,7 +733,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://pmsbackend.pixelmindsolutions.com/api';
 
 /* ── Keyframes ───────────────────────────────────────────── */
 const STYLES = `
