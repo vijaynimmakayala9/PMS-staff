@@ -1226,7 +1226,6 @@
 
 // export default MyTasks;
 
-
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   FiCheckCircle,
@@ -1250,11 +1249,14 @@ import {
   FiActivity,
   FiFolder,
   FiChevronDown,
-  FiChevronUp
+  FiChevronUp,
+  FiSave,
+  FiX
 } from 'react-icons/fi';
 import axios from 'axios';
 
 const API_BASE_URL = 'https://pmsbackend.pixelmindsolutions.com/api';
+// const API_BASE_URL = 'http://localhost:5000/api';
 
 const style = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
@@ -2141,6 +2143,7 @@ const MyTasks = () => {
   const [employeeId, setEmployeeId] = useState(null);
   const [employeeName, setEmployeeName] = useState(null);
   const [expandedProjects, setExpandedProjects] = useState({});
+  const [updatingTask, setUpdatingTask] = useState(null);
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'medium', dueDate: '', projectName: '' });
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -2205,7 +2208,8 @@ const MyTasks = () => {
           if (project.tasks && project.tasks.length > 0) {
             project.tasks.forEach((task, tIndex) => {
               tasks.push({
-                id: task._id || `${pIndex}-${tIndex}`,
+                id: task._id,
+                taskId: task._id,
                 title: task.title,
                 description: task.description || '',
                 category: task.category || 'work',
@@ -2217,7 +2221,8 @@ const MyTasks = () => {
                 estimatedHours: task.estimatedHours || 0,
                 actualHours: task.actualHours || 0,
                 assigner: task.assignedBy?.employeeName || worksheetData.employName,
-                projectName: project.projectName
+                projectName: project.projectName,
+                worksheetId: worksheetData._id
               });
             });
           }
@@ -2270,6 +2275,138 @@ const MyTasks = () => {
     }));
   };
 
+  // Update task status via API
+  const updateTaskStatus = async (taskId, projectName, newStatus, actualHours = null) => {
+    const { token, employeeId: empId } = getUserDataFromStorage();
+    
+    if (!worksheet) {
+      setError('Worksheet not found');
+      return;
+    }
+
+    setUpdatingTask(taskId);
+    
+    try {
+      const payload = { status: newStatus };
+      if (actualHours !== null) payload.actualHours = actualHours;
+      
+      const response = await axios.put(
+        `${API_BASE_URL}/worksheets/${worksheet._id}/project/${projectName}/task/${taskId}/status`,
+        payload,
+        { headers: { Authorization: token ? `Bearer ${token}` : '' } }
+      );
+      
+      if (response.data.success) {
+        // Update local state
+        setAllTasks(prev => prev.map(task =>
+          task.id === taskId
+            ? { 
+                ...task, 
+                status: newStatus, 
+                completedDate: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : task.completedDate 
+              }
+            : task
+        ));
+        setError(null);
+      } else {
+        setError(response.data.message || 'Failed to update task status');
+      }
+    } catch (err) {
+      console.error('Error updating task status:', err);
+      setError(err.response?.data?.message || 'Failed to update task status');
+    } finally {
+      setUpdatingTask(null);
+    }
+  };
+
+  // Handle status change from dropdown
+  const handleTaskStatusChange = (taskId, projectName, newStatus) => {
+    updateTaskStatus(taskId, projectName, newStatus);
+  };
+
+  // Handle delete task via API
+  const handleDeleteTask = async (taskId, projectName) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    
+    const { token } = getUserDataFromStorage();
+    
+    if (!worksheet) {
+      setError('Worksheet not found');
+      return;
+    }
+
+    setUpdatingTask(taskId);
+    
+    try {
+      const response = await axios.delete(
+        `${API_BASE_URL}/worksheets/${worksheet._id}/project/${projectName}/task/${taskId}`,
+        { headers: { Authorization: token ? `Bearer ${token}` : '' } }
+      );
+      
+      if (response.data.success) {
+        setAllTasks(prev => prev.filter(task => task.id !== taskId));
+        setError(null);
+      } else {
+        setError(response.data.message || 'Failed to delete task');
+      }
+    } catch (err) {
+      console.error('Error deleting task:', err);
+      setError(err.response?.data?.message || 'Failed to delete task');
+    } finally {
+      setUpdatingTask(null);
+    }
+  };
+
+  // Handle add task via API
+  const handleAddTask = async () => {
+    if (!newTask.title.trim() || !newTask.projectName) {
+      setError('Task title and project are required');
+      return;
+    }
+    
+    const { token } = getUserDataFromStorage();
+    
+    if (!worksheet) {
+      setError('Worksheet not found');
+      return;
+    }
+
+    setUpdatingTask('new');
+    
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/worksheets/${worksheet._id}/project/${newTask.projectName}/tasks`,
+        {
+          title: newTask.title,
+          description: newTask.description || '',
+          priority: newTask.priority,
+          dueDate: newTask.dueDate,
+          estimatedHours: 4,
+          category: 'work',
+          assignedBy: {
+            empId: employeeId,
+            employeeName: employeeName
+          }
+        },
+        { headers: { Authorization: token ? `Bearer ${token}` : '' } }
+      );
+      
+      if (response.data.success) {
+        await fetchWorksheet(); // Refresh all data
+        setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', projectName: '' });
+        setShowAddForm(false);
+        setError(null);
+      } else {
+        setError(response.data.message || 'Failed to add task');
+      }
+    } catch (err) {
+      console.error('Error adding task:', err);
+      setError(err.response?.data?.message || 'Failed to add task');
+    } finally {
+      setUpdatingTask(null);
+    }
+  };
+
   // Format date
   const formatDate = (date) => {
     if (!date) return 'N/A';
@@ -2295,48 +2432,6 @@ const MyTasks = () => {
   // Get tasks for a specific project
   const getProjectTasks = (projectName) => {
     return allTasks.filter(task => task.projectName === projectName);
-  };
-
-  // Handle status change for task
-  const handleTaskStatusChange = (taskId, newStatus) => {
-    setAllTasks(prev => prev.map(t => 
-      t.id === taskId 
-        ? { ...t, status: newStatus, completedDate: newStatus === 'completed' ? new Date().toISOString().split('T')[0] : t.completedDate }
-        : t
-    ));
-  };
-
-  // Handle delete task
-  const handleDeleteTask = (taskId) => {
-    setAllTasks(prev => prev.filter(t => t.id !== taskId));
-  };
-
-  // Handle add task
-  const handleAddTask = () => {
-    if (!newTask.title.trim() || !newTask.projectName) {
-      setError('Task title and project are required');
-      return;
-    }
-    
-    const newTaskObj = {
-      id: Date.now().toString(),
-      title: newTask.title,
-      description: newTask.description,
-      category: 'work',
-      status: 'pending',
-      priority: newTask.priority,
-      dueDate: newTask.dueDate,
-      assignedDate: new Date().toISOString().split('T')[0],
-      completedDate: null,
-      estimatedHours: 4,
-      actualHours: 0,
-      assigner: employeeName || 'You',
-      projectName: newTask.projectName
-    };
-    
-    setAllTasks(prev => [newTaskObj, ...prev]);
-    setNewTask({ title: '', description: '', priority: 'medium', dueDate: '', projectName: '' });
-    setShowAddForm(false);
   };
 
   const isOverdue = (dueDate) => dueDate && new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString();
@@ -2469,8 +2564,8 @@ const MyTasks = () => {
                   onChange={e => setNewTask({ ...newTask, dueDate: e.target.value })}
                   style={{ flex: 1 }}
                 />
-                <button className="btn-add" onClick={handleAddTask}>
-                  <FiPlus /> Add Task
+                <button className="btn-add" onClick={handleAddTask} disabled={updatingTask === 'new'}>
+                  {updatingTask === 'new' ? <FiRefreshCw className="animate-spin" /> : <FiPlus />} Add Task
                 </button>
                 <button className="btn-add" onClick={() => setShowAddForm(false)} style={{ background: '#94a3b8' }}>
                   Cancel
@@ -2571,6 +2666,8 @@ const MyTasks = () => {
                             projectTasks.map(task => {
                               const ps = priorityStyle(task.priority);
                               const over = isOverdue(task.dueDate) && task.status !== 'completed';
+                              const isUpdating = updatingTask === task.id;
+                              
                               return (
                                 <tr key={task.id} style={{ background: '#fff' }}>
                                   <td style={{ paddingLeft: 48 }}>
@@ -2582,13 +2679,15 @@ const MyTasks = () => {
                                     <select
                                       className="status-select"
                                       value={task.status === 'overdue' ? 'pending' : task.status}
-                                      onChange={e => handleTaskStatusChange(task.id, e.target.value)}
+                                      onChange={e => handleTaskStatusChange(task.id, task.projectName, e.target.value)}
                                       style={{ cssText: statusStyle(task.status) }}
+                                      disabled={isUpdating}
                                     >
                                       <option value="pending">Pending</option>
                                       <option value="in-progress">In Progress</option>
                                       <option value="completed">Completed</option>
                                     </select>
+                                    {isUpdating && <span className="ml-2 text-xs text-teal-500">Updating...</span>}
                                   </td>
                                   <td>
                                     <span className="badge" style={{ background: ps.bg, color: ps.color }}>
@@ -2621,8 +2720,14 @@ const MyTasks = () => {
                                   </td>
                                   <td>
                                     <div className="action-btns">
-                                      <button className="btn-icon btn-icon-edit" title="Edit"><FiEdit /></button>
-                                      <button className="btn-icon btn-icon-del" onClick={() => handleDeleteTask(task.id)} title="Delete"><FiTrash2 /></button>
+                                      <button 
+                                        className="btn-icon btn-icon-del" 
+                                        onClick={() => handleDeleteTask(task.id, task.projectName)} 
+                                        title="Delete"
+                                        disabled={isUpdating}
+                                      >
+                                        {isUpdating ? <FiRefreshCw className="animate-spin" /> : <FiTrash2 />}
+                                      </button>
                                     </div>
                                   </td>
                                 </tr>
